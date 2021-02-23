@@ -55,7 +55,7 @@ void GLDisplayWidget::initializeGL()
     // the path to the off-file of your choice
     // --------------------------------------------------------------------------------------
     char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry-master/off_files/";
-    char off_filename[64] = "line1.tri";
+    char off_filename[64] = "line0.tri";
     // --------------------------------------------------------------------------------------
 
     // Building the full path to the off file.
@@ -224,3 +224,4 @@ void GLDisplayWidget::wheelEvent(QWheelEvent *event)
         _Z = (numDegrees.x() > 0 || numDegrees.y() > 0) ? _Z + stepZoom : _Z - stepZoom;
     }
 }
+

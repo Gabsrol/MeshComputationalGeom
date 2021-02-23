@@ -118,8 +118,8 @@ Vertex Vertex::cross(const Vertex &other_vertex) const
 // ----------------------------------------------
 
 /**
- * Default constructor. 
- * 
+ * Default constructor.
+ *
  * The face is described with three vertices. These vertices are
  * store into face object with their index. By default the three indexes are 0.
  */
@@ -132,10 +132,10 @@ Face::Face()
 
 /**
  * Constructor with explicit data.
- * 
+ *
  * The face is described with three vertices. These vertices are
  * store into face object with their index
- * 
+ *
  * @param i_vertex0_, i_vertex1_, i_vertex2_ the indexes of the three vertex
  *     describing the triangle.
  */
@@ -159,7 +159,7 @@ Mesh::Mesh()
 
 /**
  * Parse an off file and store the data into verticesTab and facesTab.
- * 
+ *
  * @param file_name the path of the file.
  */
 void Mesh::parseFile(const char file_name[])
@@ -239,12 +239,12 @@ void Mesh::parseFile(const char file_name[])
         };
     }
 
-    // On remet à jour la liste en centrant cette fois les coordonnees
+    // On remet Ã  jour la liste en centrant cette fois les coordonnees
     double x_middle = (x_max + x_min) / 2;
     double y_middle = (y_max + y_min) / 2;
     double z_middle = (z_max + z_min) / 2;
 
-    // Mise à jour de tous les vertex en les remplaçant par leur équivalent centré en 0,0,0.
+    // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
     for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
     {
         Vertex vertex = verticesTab[i_vertex];
@@ -272,7 +272,7 @@ void Mesh::sew()
 {
     std::cout << "begin sewing" << std::endl;
 
-    // vert_done est un liste de boolean. Si vert_done[5] == true, ça signifie que le vertex 5 à été traité
+    // vert_done est un liste de boolean. Si vert_done[5] == true, Ã§a signifie que le vertex 5 Ã  Ã©tÃ© traitÃ©
     // Initilisation de vert_done
     bool vert_done[nb_vertex];
     for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
@@ -285,23 +285,23 @@ void Mesh::sew()
 
     for (int i_face = 0; i_face < nb_faces; i_face++)
     {
-        // On se balade dans toutes les faces définie, et on récupère les indices des trois points(=vertex)
+        // On se balade dans toutes les faces dÃ©finie, et on rÃ©cupÃ¨re les indices des trois points(=vertex)
         Face *face = &facesTab[i_face]; // Un pointeur qui pointe vers la i_eme face
 
-        // On regarde si on a déja traité les vertex(=points). Si non, on dit qu'on les a traité
+        // On regarde si on a dÃ©ja traitÃ© les vertex(=points). Si non, on dit qu'on les a traitÃ©
         // puis on ajoute l'indice de la face comme face incidente au vertex(=point)
         for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
         {
             int i_vertex = face->i_vertex[i_vertex_in_triangle];
             if (!vert_done[i_vertex])
             {
-                verticesTab[i_vertex].i_incident_face = i_face; // On ajoute à l'objet vertex une face inscidente
-                vert_done[i_vertex] = true;                     // On le considère traité
+                verticesTab[i_vertex].i_incident_face = i_face; // On ajoute Ã  l'objet vertex une face inscidente
+                vert_done[i_vertex] = true;                     // On le considÃ¨re traitÃ©
             };
         }
 
         // setting adjacent faces on each edge:
-        std::pair<int, int> edge;                            //  Arrêtes
+        std::pair<int, int> edge;                            //  ArrÃªtes
         std::pair<int, int> i_other_face_and_i_other_vertex; //  {face id whose edge was'nt yet register in the map,  its opposed vertex id (0,1 or 2) }
 
         // Order vertex
@@ -315,21 +315,21 @@ void Mesh::sew()
             {
                 edge = {face->i_vertex[(i_vertex_in_triangle + 2) % 3], face->i_vertex[(i_vertex_in_triangle + 1) % 3]};
             }
-            // edge est la pair d'indice dans l'ordre croissant de l'arrète
+            // edge est la pair d'indice dans l'ordre croissant de l'arrÃ¨te
 
             if (myMap.find(edge) == myMap.end())
-            { // Si l'arrète n'est pas dans la map
+            { // Si l'arrÃ¨te n'est pas dans la map
                 // On l'ajoute
-                myMap[edge] = {i_face, i_vertex_in_triangle}; // (i_vertex0, i_vertex1) : (i_face, i_vertex) (c'est le vertex opposé)
+                myMap[edge] = {i_face, i_vertex_in_triangle}; // (i_vertex0, i_vertex1) : (i_face, i_vertex) (c'est le vertex opposÃ©)
             }
             else
-            {                                                     // L'arrête appartient déja à un autre triangle de la map
+            {                                                     // L'arrÃªte appartient dÃ©ja Ã  un autre triangle de la map
                 i_other_face_and_i_other_vertex = myMap.at(edge); //(i_face de l'autre triangle, i_face dans l'autre triangle (0,1,2))
                 int i_other_face = i_other_face_and_i_other_vertex.first;
                 int i_other_vertex = i_other_face_and_i_other_vertex.second;
 
-                face->adjacent_faces[i_vertex_in_triangle] = i_other_face; // On stocke l'indice de la face adjacente opposé au vertex(=point) n°2
-                // On fait la même chose à l'autre triangle
+                face->adjacent_faces[i_vertex_in_triangle] = i_other_face; // On stocke l'indice de la face adjacente opposÃ© au vertex(=point) nÂ°2
+                // On fait la mÃªme chose Ã  l'autre triangle
                 facesTab[i_other_face].adjacent_faces[i_other_vertex] = i_face;
             }
         }
@@ -421,7 +421,7 @@ void Mesh::computeLaplacian()
 
 /**
  * Tests if a vertex is within the circumscribed circle of the face.
- * 
+ *
  * @param face for the test.
  * @param P the vertex for which we want to know if it's in the circumscribed circle.
  * @return double = 0 if P is on the circumscribed circle.
@@ -431,7 +431,7 @@ void Mesh::computeLaplacian()
 double Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
 {
     // On analyse seulement les dimensions x, y
-    // On regarde en projetant sur le paraboloïde z = x*x + y*y
+    // On regarde en projetant sur le paraboloÃ¯de z = x*x + y*y
 
     Vertex A = verticesTab[face.i_vertex[0]];
     Vertex B = verticesTab[face.i_vertex[1]];
@@ -454,7 +454,7 @@ double Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
 
 /**
  * Tests whether an edge is Delaunay.
- * 
+ *
  * @param i_face1 a face that contains the edge.
  * @param i_vertex_oppose_1 the index of the vertex opposite the edge
  * @returns true if Delaunay, false otherwise.
@@ -493,14 +493,14 @@ bool Mesh::isDelaunay(int i_face1, int i_vertex_oppose_1)
     double test1 = vertexInCircumscribingCircle(face1, verticesTab[i_vertex_oppose_2]);
     double test2 = vertexInCircumscribingCircle(face2, verticesTab[i_vertex_oppose_1]);
 
-    // On demande à ce que les points soient sur la bordure ou strictement à l'extérieur du cercle
+    // On demande Ã  ce que les points soient sur la bordure ou strictement Ã  l'extÃ©rieur du cercle
     return ((test1 <= 0) && (test2 <= 0));
 }
 
 /**
  * Flips the edge.
  * It is therefore assumed that the edge is not on the contour.
- * 
+ *
  * @param i_face1 the index of the first triangle to which the edge belongs.
  * @param vertex_oppose_1_initial the opposite vertex, belonging to the
  *     second triangle whose edge is common.
@@ -590,7 +590,7 @@ QList<std::pair<int, int>> Mesh::flipEdge(int i_face1, int i_vertex_oppose_1_ini
     face2.adjacent_faces[2] = i_face5;
 
     // Faces 3 4 5 6
-    // On actualise la face adj partant du vertex à l'oppose de notre quadrilatere
+    // On actualise la face adj partant du vertex Ã  l'oppose de notre quadrilatere
 
     for (int i = 0; i < 3; i++)
     {
@@ -620,7 +620,7 @@ QList<std::pair<int, int>> Mesh::flipEdge(int i_face1, int i_vertex_oppose_1_ini
 
 /**
  * Tests if A, B and C are oriented in the trigonometric direction.
- * 
+ *
  * @param A, B, C vertices for the orientation test.
  * @returns double which is positive if A B C are oriented in the
  *     trigonometric direction, zero if aligned, negative otherwise.
@@ -641,9 +641,9 @@ double Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
 
 /**
  * Tests if a vertex is inside a face.
- * 
+ *
  * @param face used for the test.
- * @param vertex we want to know if it's inside the face. 
+ * @param vertex we want to know if it's inside the face.
  * @returns double which is positive if the vertex is inside the
  *     triangle, 0 if it is on an edge, negative if it is outside.
 */
@@ -670,15 +670,15 @@ double Mesh::inTriangleTest(Face face, Vertex vertex)
     }
     else
     {
-        // On est forcément en dehors du triangle
-        // On renvoi une valeur négative
+        // On est forcÃ©ment en dehors du triangle
+        // On renvoi une valeur nÃ©gative
         return -1;
     };
 }
 
 /**
  * Insert a point in a face.
- * 
+ *
  * @param i_P index of the point to be inserted.
  * @param i_face index of the face in which we want to insert the vertex.
  */
@@ -704,7 +704,7 @@ void Mesh::insertionTriangle(int i_P, int i_face)
     Vertex &C = verticesTab[i_C];
     Vertex &P = verticesTab[i_P];
 
-    // Insérer ces triangles dans le tableau faces et supprimer l'ancien
+    // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
 
     facesTab[i_face] = Face(i_A, i_B, i_P); // ABP
     facesTab.append(Face(i_B, i_C, i_P));   // BCP
@@ -718,7 +718,7 @@ void Mesh::insertionTriangle(int i_P, int i_face)
     Face &BCP = facesTab[i_BCP];
     Face &CAP = facesTab[i_CAP];
 
-    // Actualiser paramètres du Mesh
+    // Actualiser paramÃ¨tres du Mesh
 
     nb_faces += 2;
 
@@ -764,7 +764,7 @@ void Mesh::insertionTriangle(int i_P, int i_face)
 
 /**
  * Inserts a vertex on an edge
- * 
+ *
  * @param i_face1 index of the face containing the edge.
  * @param i_P index of the vertex to be inserted.
  */
@@ -826,7 +826,7 @@ void Mesh::insertionInArete(int i_face1, int i_P)
     Vertex &D = verticesTab[i_D];
     Vertex &P = verticesTab[i_P];
 
-    // Insérer ces triangles dans le tableau faces et supprimer l'ancien
+    // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
 
     facesTab[i_face1] = Face(i_D, i_A, i_P); // DAP
     facesTab[i_face2] = Face(i_C, i_D, i_P); // CDP
@@ -844,7 +844,7 @@ void Mesh::insertionInArete(int i_face1, int i_P)
     Face &ABP = facesTab[i_ABP];
     Face &BCP = facesTab[i_BCP];
 
-    // Actualiser paramètres du Mesh
+    // Actualiser paramÃ¨tres du Mesh
 
     nb_faces += 2;
 
@@ -905,7 +905,7 @@ void Mesh::naiveInsertion()
     // On ne prend pas en compte la dimension z
     // On part d'un maillage sans triangle, seulement des points
 
-    // Tout d'abord, on crée le rectangle qui va contenir tous les points
+    // Tout d'abord, on crÃ©e le rectangle qui va contenir tous les points
 
     double x_min = verticesTab[0].x();
     double x_max = verticesTab[0].x();
@@ -987,7 +987,7 @@ void Mesh::naiveInsertion()
 
 /**
  * Tests whether the edge opposite the vertex is on the contour.
- * 
+ *
  * @param i_face index of the face containing the edge.
  * @param i_vertex index of the vertex opposite the edge.
  * @returns true if the edge is on the contour, false otherwise.
@@ -1014,12 +1014,12 @@ bool Mesh::areteEnBordure(int i_face, int i_vertex)
 
 /**
  * After inserting a vertex into a face, flip around the vertex until the triangle is Delaunay.
- * 
+ *
  * @param i_P index of the vertex
  */
 void Mesh::lawsonAroundVertex(int i_P)
 {
-    // On part d'un vertex i_P (dans i_face) qui vient d'être insere, et on fait des flips recursifs pour qu'a la fin il soit insere et tout soit Delaunay
+    // On part d'un vertex i_P (dans i_face) qui vient d'Ãªtre insere, et on fait des flips recursifs pour qu'a la fin il soit insere et tout soit Delaunay
     // On recupere les trois ou quatre aretes autour du P dans une file
     QList<std::pair<int, int>> atraiter;
     for (int i_face = 0; i_face < nb_faces; i_face++)
@@ -1043,7 +1043,7 @@ void Mesh::lawsonAroundVertex(int i_P)
         {
             if (!isDelaunay(i_face, i_vertex))
             {
-                QList<std::pair<int, int>> nouvelle_queue = flipEdge(i_face, i_vertex); // On fait le flip et récupère les arete à retester
+                QList<std::pair<int, int>> nouvelle_queue = flipEdge(i_face, i_vertex); // On fait le flip et rÃ©cupÃ¨re les arete Ã  retester
                 while (!nouvelle_queue.isEmpty())
                 {
 
@@ -1071,7 +1071,7 @@ void Mesh::naiveInsertionAndLawson()
     // On ne prend pas en compte la dimension z
     // On part d'un maillage sans triangle, seulement des points
 
-    // Tout d'abord, on crée le rectangle qui va contenir tous les points
+    // Tout d'abord, on crÃ©e le rectangle qui va contenir tous les points
 
     double x_min = verticesTab[0].x();
     double x_max = verticesTab[0].x();
@@ -1162,7 +1162,7 @@ void Mesh::naiveInsertionAndLawson()
 
 /**
  * Finds the index (0, 1 or 2) of a vertex belonging to a face
- * 
+ *
  * @param face we're working on
  * @param i_vertex index of the vertex in the mesh
  * @return 0, 1 or 2, the index of the vertex within the face
@@ -1177,8 +1177,9 @@ int find_i_vertex_in_face(Face *face, int i_vertex)
     return i_vertex_in_face;
 }
 
+
 // ----------------------------------------------
-// --------Crust Algorithm--------
+// --------Crust Algorithm-------- MON CODE COMMENCE A PARTIR DE LA
 // ----------------------------------------------
 
 
@@ -1263,12 +1264,12 @@ void Mesh::parseTriFile(const char file_name[])
         };
     }
 
-    // On remet à jour la liste en centrant cette fois les coordonnees
+    // On remet Ã  jour la liste en centrant cette fois les coordonnees
     double x_middle = (x_max + x_min) / 2;
     double y_middle = (y_max + y_min) / 2;
     double z_middle = (z_max + z_min) / 2;
 
-    // Mise à jour de tous les vertex en les remplaçant par leur équivalent centré en 0,0,0.
+    // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
     for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
     {
         Vertex vertex = verticesTab[i_vertex];
@@ -1280,7 +1281,7 @@ void Mesh::parseTriFile(const char file_name[])
 }
 
 /**
- * Draw delaunay triangulation from vertices.
+ * Draw delaunay triangulation from vertices without triangles.
  *
  */
 void Mesh::triangulationFromVertices()
@@ -1372,3 +1373,7 @@ void Mesh::triangulationFromVertices()
         };
     };
 }
+
+
+// To Do next : CRUST --> une fonction qui calcule les centres de voronoi de chaque triangle,
+// puis qui refait la triangulation et puis qui dessine que les arÃªtes composÃ©es seulement des sommets initiaux
