@@ -625,13 +625,19 @@ void Mesh::insertionTriangle(int i_P, int i_face)
 
     // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
 
-    facesTab[i_face] = Face(i_A, i_B, i_P); // ABP
-    facesTab.append(Face(i_B, i_C, i_P));   // BCP
-    facesTab.append(Face(i_C, i_A, i_P));   // CAP
-
+    // ABP
+    facesTab[i_face] = Face(i_A, i_B, i_P);
     int i_ABP = i_face;
+
+    // BCP
+    facesTab.append(Face(i_B, i_C, i_P));
     int i_BCP = nb_faces;
+
+    // CAP
+    facesTab.append(Face(i_C, i_A, i_P));
     int i_CAP = nb_faces + 1;
+
+
 
     Face &ABP = facesTab[i_ABP];
     Face &BCP = facesTab[i_BCP];
@@ -1126,6 +1132,7 @@ void Mesh::parseTriFile(const char file_name[])
 
     // Initilize verticesTab and nb_edges
     verticesTab.clear();
+    facesTab.clear();
 
     // Read the first line, that gives the number of vertices,
     // the number of faces and the number of edges
@@ -1266,6 +1273,12 @@ void Mesh::triangulationFromVertices()
     hg.i_incident_face = nb_faces - 2;
     bd.i_incident_face = nb_faces - 1;
     hd.i_incident_face = nb_faces - 1;
+
+    // do not draw these points
+    bg.is_a_to_draw_point = false;
+    hg.is_a_to_draw_point = false;
+    bd.is_a_to_draw_point = false;
+    hd.is_a_to_draw_point = false;
 
     triangle_bg.adjacent_faces[0] = nb_faces - 1;
     triangle_bg.adjacent_faces[1] = -1;

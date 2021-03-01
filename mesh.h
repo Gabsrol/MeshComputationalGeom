@@ -19,7 +19,8 @@ public:
     double z() const;
 
     int i_incident_face; // One of the incident faces
-    int is_a_voronoi_center; //Used to implement CRUST algorithm
+    bool is_a_to_draw_point = true; //to prevent "infinite" points from being drawn
+    bool is_a_voronoi_center = false; //Used to implement CRUST algorithm
 
     double getNorm() const { return std::sqrt(_x * _x + _y * _y + _z * _z); } // The L2 norm of the vertex, seen as a vector.
 
@@ -48,6 +49,7 @@ public:
 
     int i_vertex[3];       // The three indexes of vertices defining the face.
     int adjacent_faces[3]; // The three indexes of faces around the face.
+
 };
 
 

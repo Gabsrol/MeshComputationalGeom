@@ -55,7 +55,7 @@ void GLDisplayWidget::initializeGL()
     // the path to the off-file of your choice
     // --------------------------------------------------------------------------------------
     char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry-master/off_files/";
-    char off_filename[64] = "teapot.off";
+    char off_filename[64] = "line0.tri";
     // --------------------------------------------------------------------------------------
 
     // Building the full path to the off file.
@@ -65,7 +65,7 @@ void GLDisplayWidget::initializeGL()
 
     // Construction of the mesh before it is displayed
     //_mesh.parseFile(path_to_off_file);
-    _mesh.parseTriFile(path_to_off_file);
+    _mesh.parseTriFile(path_to_off_file); // if your file contains only vertices coordinates
     //_mesh.sew();
 
     //Choose which action to apply to the selected file.
@@ -130,9 +130,12 @@ void GLDisplayWidget::drawVertices()
     glColor3f(1, 1, 1); // Choose the color white
     for (int i_vertex = 0; i_vertex < _mesh.nb_vertex; i_vertex++)
     {
-        glBegin(GL_POINTS);
-        glVertexDraw(_mesh.verticesTab[i_vertex]);
-        glEnd();
+        // draw only non infinite points
+        if(_mesh.verticesTab[i_vertex].is_a_to_draw_point){
+            glBegin(GL_POINTS);
+            glVertexDraw(_mesh.verticesTab[i_vertex]);
+            glEnd();
+        }
     }
 }
 
@@ -143,12 +146,17 @@ void GLDisplayWidget::drawEdges()
     for (int i_face = 0; i_face < _mesh.nb_faces; i_face++)
     {
         Face face = _mesh.facesTab[i_face];
+
         for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
         { // For every face of _mesh.facesTab
             // It draws a line between one vertex and the next.
             glBegin(GL_LINE_STRIP);
-            glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
-            glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
+            if(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_to_draw_point){
+                glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
+            }
+            if(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_to_draw_point){
+                glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
+            }
             glEnd();
         }
     }
@@ -165,7 +173,9 @@ void GLDisplayWidget::drawFaces()
         glBegin(GL_TRIANGLES);
         for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
         {
-            glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]]);
+            if(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]].is_a_to_draw_point){
+                glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]]);
+            }
         }
         glEnd();
     }
