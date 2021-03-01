@@ -19,6 +19,7 @@ public:
     double z() const;
 
     int i_incident_face; // One of the incident faces
+    int is_a_voronoi_center; //Used to implement CRUST algorithm
 
     double getNorm() const { return std::sqrt(_x * _x + _y * _y + _z * _z); } // The L2 norm of the vertex, seen as a vector.
 
@@ -49,11 +50,7 @@ public:
     int adjacent_faces[3]; // The three indexes of faces around the face.
 };
 
-/*
-class Circulator_on_faces; // Full definition in the following
 
-class Circulator_on_vertices; // Full definition in the following
-*/
 
 class Mesh
 {
@@ -97,6 +94,8 @@ public:
     bool areteEnBordure(int i_face, int i_vertex);
     void lawsonAroundVertex(int i_P);
     void naiveInsertionAndLawson();
+
+
 };
 
 /*

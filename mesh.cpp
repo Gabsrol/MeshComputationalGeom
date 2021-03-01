@@ -336,88 +336,7 @@ void Mesh::sew()
     }
     std::cout << "end sewing" << std::endl;
 }
-/*
-Vertex *Mesh::vertices_begin()
-{
-    return verticesTab.begin();
-}
 
-Vertex *Mesh::vertices_past_the_end()
-{
-    return verticesTab.end();
-}
-
-Face *Mesh::faces_begin()
-{
-    return facesTab.begin();
-}
-
-Face *Mesh::faces_past_the_end()
-{
-    return facesTab.end();
-}
-
-Circulator_on_faces Mesh::incident_faces(int i_vertex)
-{
-    return Circulator_on_faces(this, i_vertex);
-}
-
-Circulator_on_vertices Mesh::adjacent_vertices(int i_vertex)
-{
-    return Circulator_on_vertices(this, i_vertex);
-}
-*/
-/*
-void Mesh::computeLaplacian()
-{
-    std::cout << "begin compute laplacian" << std::endl;
-    for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
-    {
-        double area = 0;
-        Vertex laplacian(0, 0, 0);
-
-        Circulator_on_vertices circulator_on_vertices(this, i_vertex);
-
-        Vertex vertexO = verticesTab[i_vertex];
-        Vertex vertexA;
-        Vertex vertexB;
-        Vertex vertexC;
-
-        Vertex vectorAtoO;
-        Vertex vectorAtoB;
-        Vertex vectorCtoO;
-        Vertex vectorCtoB;
-        Vertex vectorOtoB;
-
-        vertexA = *circulator_on_vertices;
-        ++circulator_on_vertices;
-        vertexB = *circulator_on_vertices;
-        ++circulator_on_vertices;
-        vertexC = *circulator_on_vertices;
-
-        do
-        {
-            vectorAtoO = vertexO - vertexA;
-            vectorAtoB = vertexB - vertexA;
-            vectorCtoO = vertexO - vertexC;
-            vectorCtoB = vertexB - vertexC;
-            vectorOtoB = vertexB - vertexO;
-
-            laplacian = laplacian + vectorOtoB * (cotan(vectorAtoO, vectorAtoB) + cotan(vectorCtoO, vectorCtoB));
-            area += vectorAtoO.cross(vectorAtoB).getNorm() / 2 / 3;
-
-            vertexA = vertexB;
-            vertexB = vertexC;
-            ++circulator_on_vertices;
-            vertexC = *circulator_on_vertices;
-
-        } while (vertexA != *circulator_on_vertices.begin());
-
-        laplacianTab.push_back(laplacian / (2 * area));
-    }
-    std::cout << "laplacian computed" << std::endl;
-}
-*/
 
 /**
  * Tests if a vertex is within the circumscribed circle of the face.
@@ -1183,11 +1102,12 @@ int find_i_vertex_in_face(Face *face, int i_vertex)
 // ----------------------------------------------
 
 
-/**
+/*
  * Parse a file with vertices and store the data into verticesTab.
- *
- * @param file_name the path of the file.
- */
+
+ * params:
+  - file_name the path of the file.
+*/
 void Mesh::parseTriFile(const char file_name[])
 {
     // Lecture du fichier, et stockage dans verticesTab
@@ -1212,6 +1132,7 @@ void Mesh::parseTriFile(const char file_name[])
     fscanf(pFile, "%d\n", &nb_vertex);
     // Logs the result
     std::cout << "nb points: " << nb_vertex << std::endl;
+    nb_faces = 0;
 
     // Reserve the right size for verticesTab and facesTab.
     verticesTab.reserve(nb_vertex);
@@ -1280,9 +1201,9 @@ void Mesh::parseTriFile(const char file_name[])
     std::cout << "end of reading" << std::endl;
 }
 
-/**
+/*
  * Draw delaunay triangulation from vertices without triangles.
- *
+
  */
 void Mesh::triangulationFromVertices()
 {
@@ -1374,6 +1295,12 @@ void Mesh::triangulationFromVertices()
     };
 }
 
+
+/*
+ * Add the Voronoi point associated to a Delaunay Triangle to verticesTab
+ *
+*/
+//void Mesh::triangulationFromVertices()
 
 // To Do next : CRUST --> une fonction qui calcule les centres de voronoi de chaque triangle,
 // puis qui refait la triangulation et puis qui dessine que les arÃªtes composÃ©es seulement des sommets initiaux
