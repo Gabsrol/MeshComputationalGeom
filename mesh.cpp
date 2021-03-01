@@ -1323,6 +1323,8 @@ QVector<double> Mesh::voronoiCenter(int i_face)
     Vertex &B = verticesTab[triangle.i_vertex[1]];
     Vertex &C = verticesTab[triangle.i_vertex[2]];
 
+    std::cout << " orientation: " << orientationTest(A,B,C) << std::endl;
+
     // vectors
     Vertex AB = B.operator-(A);
     Vertex BA = A.operator-(B);
@@ -1360,9 +1362,11 @@ void Mesh::testVoronoiCenter(){
     {
 
         QVector<double> voronoiCoordinates = voronoiCenter(i_face);
+        std::cout << "nb points: " << nb_vertex << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
+        std::cout << "nb points: " << nb_vertex << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
+        std::cout << "nb points: " << nb_vertex << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
+        verticesTab.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
         nb_vertex+=1;
-        std::cout << "nb points: " << nb_vertex << " vorCoord: " << voronoiCoordinates[0] << std::endl;
-        verticesTab[nb_vertex-1] = Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]);
 
         if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-1]) > 0)
         {

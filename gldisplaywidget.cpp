@@ -74,7 +74,7 @@ void GLDisplayWidget::initializeGL()
     //_mesh.naiveInsertion();
     //_mesh.naiveInsertionAndLawson();
     _mesh.triangulationFromVertices();
-    //_mesh.testVoronoiCenter();
+    _mesh.testVoronoiCenter();
     // --------------------------------------------------------------------------------------
 }
 
@@ -136,6 +136,7 @@ void GLDisplayWidget::drawVertices()
         if(_mesh.verticesTab[i_vertex].is_a_to_draw_point){
 
             glBegin(GL_POINTS);
+            if(i_vertex==_mesh.nb_vertex-1){glColor3f(1, 0, 0);}
             glVertexDraw(_mesh.verticesTab[i_vertex]);
             glEnd();
         }
