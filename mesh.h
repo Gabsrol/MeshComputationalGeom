@@ -97,7 +97,7 @@ public:
     void lawsonAroundVertex(int i_P);
     void naiveInsertionAndLawson();
 
-
+    QVector<double> voronoiCenter(int i_face);
 };
 
 /*

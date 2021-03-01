@@ -1310,10 +1310,49 @@ void Mesh::triangulationFromVertices()
 
 
 /*
- * Add the Voronoi point associated to a Delaunay Triangle to verticesTab
+ * Return the Voronoi point coordinates associated to a Delaunay Triangle
  *
 */
-//void Mesh::triangulationFromVertices()
+QVector<double> Mesh::voronoiCenter(int i_face)
+{
+    QVector<double> coordinates;
+
+    Face &triangle = facesTab[i_face];
+
+    Vertex &A = verticesTab[triangle.i_vertex[0]];
+    Vertex &B = verticesTab[triangle.i_vertex[1]];
+    Vertex &C = verticesTab[triangle.i_vertex[2]];
+
+    // vectors
+    Vertex AB = B.operator-(A);
+    Vertex BA = A.operator-(B);
+    Vertex BC = C.operator-(B);
+    Vertex CB = B.operator-(C);
+    Vertex AC = C.operator-(A);
+    Vertex CA = A.operator-(C);
+
+    // tangentes
+    double tan_A = AB.cross(AC).z()/(AB.operator*(AC));
+    double tan_B = BC.cross(BA).z()/(BC.operator*(BA));
+    double tan_C = CA.cross(CB).z()/(CA.operator*(CB));
+
+    // barycentric coords
+    double alpha = tan_B+tan_C;
+    double beta = tan_A + tan_C;
+    double gamma = tan_B + tan_A;
+    double sum_abg = alpha + beta + gamma;
+
+    double x_voronoi = (alpha*A.x() + beta*B.x() + gamma*C.x())/sum_abg;
+    coordinates.push_back(x_voronoi);
+    double y_voronoi = (alpha*A.y() + beta*B.y() + gamma*C.y())/sum_abg;
+    coordinates.push_back(y_voronoi);
+    double z_voronoi = (alpha*A.z() + beta*B.z() + gamma*C.z())/sum_abg;
+    coordinates.push_back(z_voronoi);
+
+    return coordinates;
+}
+
+
 
 // To Do next : CRUST --> une fonction qui calcule les centres de voronoi de chaque triangle,
 // puis qui refait la triangulation et puis qui dessine que les arÃªtes composÃ©es seulement des sommets initiaux
