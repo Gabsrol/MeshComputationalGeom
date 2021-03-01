@@ -54,8 +54,8 @@ void GLDisplayWidget::initializeGL()
     // Replace the values of the following two variables with
     // the path to the off-file of your choice
     // --------------------------------------------------------------------------------------
-    char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry-master/off_files/";
-    char off_filename[64] = "line0.tri";
+    char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
+    char off_filename[64] = "triangle.off";
     // --------------------------------------------------------------------------------------
 
     // Building the full path to the off file.
@@ -74,6 +74,7 @@ void GLDisplayWidget::initializeGL()
     //_mesh.naiveInsertion();
     //_mesh.naiveInsertionAndLawson();
     _mesh.triangulationFromVertices();
+    //_mesh.testVoronoiCenter();
     // --------------------------------------------------------------------------------------
 }
 
@@ -130,8 +131,10 @@ void GLDisplayWidget::drawVertices()
     glColor3f(1, 1, 1); // Choose the color white
     for (int i_vertex = 0; i_vertex < _mesh.nb_vertex; i_vertex++)
     {
+
         // draw only non infinite points
         if(_mesh.verticesTab[i_vertex].is_a_to_draw_point){
+
             glBegin(GL_POINTS);
             glVertexDraw(_mesh.verticesTab[i_vertex]);
             glEnd();

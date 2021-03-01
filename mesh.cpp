@@ -1353,6 +1353,32 @@ QVector<double> Mesh::voronoiCenter(int i_face)
 }
 
 
+void Mesh::testVoronoiCenter(){
+
+
+    for (int i_face = 0; i_face < nb_faces; i_face++)
+    {
+
+        QVector<double> voronoiCoordinates = voronoiCenter(i_face);
+        nb_vertex+=1;
+        std::cout << "nb points: " << nb_vertex << " vorCoord: " << voronoiCoordinates[0] << std::endl;
+        verticesTab[nb_vertex-1] = Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]);
+
+        if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-1]) > 0)
+        {
+            insertionTriangle(nb_vertex-1, i_face);
+            lawsonAroundVertex(nb_vertex-1);
+            break;
+        }
+        else if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-1]) == 0)
+        {
+            insertionInArete(nb_vertex-1, i_face); // pb ici probablement
+            lawsonAroundVertex(nb_vertex-1);
+            break;
+        };
+    };
+}
+
 
 // To Do next : CRUST --> une fonction qui calcule les centres de voronoi de chaque triangle,
 // puis qui refait la triangulation et puis qui dessine que les arÃªtes composÃ©es seulement des sommets initiaux
