@@ -37,3 +37,8 @@ void MainWindow::on_checkBox_Faces_stateChanged(int arg)
     ui->rendering->show_faces = arg == 2;
 }
 
+
+void MainWindow::on_pushButton_released()
+{
+    ui->rendering->add_random_vertex();
+}

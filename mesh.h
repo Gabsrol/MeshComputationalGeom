@@ -65,6 +65,7 @@ public:
     void sew();
     void parseTriFile(const char file[]);
     void triangulationFromVertices();
+    void add_vertex(Vertex v);
 
     int nb_vertex, nb_faces; // Number of vertices and faces
     

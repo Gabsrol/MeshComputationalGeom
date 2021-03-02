@@ -19,6 +19,7 @@ public:
     bool show_vertecis;    // A boolean value that determine if the vertices are displayed
     bool show_edges;       // Same for edges
     bool show_faces;       // Same for faces
+    void add_random_vertex();
 
 protected:
     // Mouse Management

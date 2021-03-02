@@ -54,7 +54,8 @@ void GLDisplayWidget::initializeGL()
     // Replace the values of the following two variables with
     // the path to the off-file of your choice
     // --------------------------------------------------------------------------------------
-    char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
+    char path_to_off_files[512] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
+    //char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
     char off_filename[64] = "triangle.off";
     // --------------------------------------------------------------------------------------
 
@@ -74,7 +75,7 @@ void GLDisplayWidget::initializeGL()
     //_mesh.naiveInsertion();
     //_mesh.naiveInsertionAndLawson();
     _mesh.triangulationFromVertices();
-    _mesh.testVoronoiCenter();
+    //_mesh.testVoronoiCenter();
     // --------------------------------------------------------------------------------------
 }
 
@@ -183,6 +184,19 @@ void GLDisplayWidget::drawFaces()
         }
         glEnd();
     }
+}
+
+
+void GLDisplayWidget::add_random_vertex(){
+    float LO = -2;
+    float HI = 2;
+    float rand_x = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+    float rand_y = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+    std::cout << "add random vertex : " << std::endl;
+    std::cout << rand_x << std::endl;
+    std::cout << rand_y << std::endl;
+    Vertex v(rand_x,rand_y,0);
+    _mesh.add_vertex(v);
 }
 
 /*

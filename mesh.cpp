@@ -337,6 +337,19 @@ void Mesh::sew()
     std::cout << "end sewing" << std::endl;
 }
 
+void Mesh::add_vertex(Vertex v){
+    verticesTab.append(v);
+    int i_vertex = verticesTab.size()-1;
+    for (int i_face = 0; i_face < nb_faces; i_face++)
+    {
+
+        if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
+        {
+            insertionTriangle(i_vertex, i_face);
+            break;
+        };
+    };
+}
 
 /**
  * Tests if a vertex is within the circumscribed circle of the face.

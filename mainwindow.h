@@ -21,6 +21,8 @@ private slots:
     void on_checkBox_Edges_stateChanged(int arg);     // Called when the "show edges" checkbox is checked
     void on_checkBox_Faces_stateChanged(int arg);     // Called when the "show faces" checkbox is checked
 
+    void on_pushButton_released();
+
 private:
     Ui::MainWindow *ui;
 };
