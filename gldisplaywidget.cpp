@@ -188,8 +188,8 @@ void GLDisplayWidget::drawFaces()
 
 
 void GLDisplayWidget::add_random_vertex(){
-    float LO = -2;
-    float HI = 2;
+    float LO = -3;
+    float HI = 3;
     float rand_x = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
     float rand_y = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
     std::cout << "add random vertex : " << std::endl;

@@ -342,12 +342,19 @@ void Mesh::add_vertex(Vertex v){
     int i_vertex = verticesTab.size()-1;
     for (int i_face = 0; i_face < nb_faces; i_face++)
     {
-
         if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
         {
             insertionTriangle(i_vertex, i_face);
+            lawsonAroundVertex(i_vertex);
+            break;
+        }
+        else if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) == 0)
+        {
+            insertionInArete(i_face, i_vertex); // pb ici probablement
+            lawsonAroundVertex(i_vertex);
             break;
         };
+        // Il manque le cas inTriangleTest == 0 (ie sur une arete; cf insertion arete qui marche pas (?) pr le moment)
     };
 }
 
