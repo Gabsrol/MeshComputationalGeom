@@ -99,7 +99,7 @@ public:
     void naiveInsertionAndLawson();
 
     QVector<double> voronoiCenter(int i_face);
-    void testVoronoiCenter();
+    void addVoronoiCentersToTriangulation();
 };
 
 /*

@@ -339,6 +339,8 @@ void Mesh::sew()
 
 void Mesh::add_vertex(Vertex v){
     verticesTab.append(v);
+    nb_vertex+=1;
+
     int i_vertex = verticesTab.size()-1;
     for (int i_face = 0; i_face < nb_faces; i_face++)
     {
@@ -1375,30 +1377,49 @@ QVector<double> Mesh::voronoiCenter(int i_face)
 }
 
 
-void Mesh::testVoronoiCenter(){
+void Mesh::addVoronoiCentersToTriangulation(){
 
+    int nb_voronoi_vertices = 0;
 
     for (int i_face = 0; i_face < nb_faces; i_face++)
+    // we calculate voronoi dual point for each faces that is not an infinite face
     {
+        if(verticesTab[facesTab[i_face].i_vertex[0]].is_a_to_draw_point
+                && verticesTab[facesTab[i_face].i_vertex[1]].is_a_to_draw_point
+                && verticesTab[facesTab[i_face].i_vertex[2]].is_a_to_draw_point){
 
-        QVector<double> voronoiCoordinates = voronoiCenter(i_face);
-        std::cout << "nb points: " << nb_vertex << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
-        std::cout << "nb points: " << nb_vertex << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
-        std::cout << "nb points: " << nb_vertex << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
-        verticesTab.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
-        nb_vertex+=1;
+            QVector<double> voronoiCoordinates = voronoiCenter(i_face);
+            std::cout << "nb points: " << nb_faces << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
+            std::cout << "nb points: " << nb_vertex << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
+            std::cout << "nb points: " << nb_vertex << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
 
-        if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-1]) > 0)
-        {
-            insertionTriangle(nb_vertex-1, i_face);
-            lawsonAroundVertex(nb_vertex-1);
-            break;
+            verticesTab.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
+            nb_vertex+=1;
+            nb_voronoi_vertices+=1;
+
+            // define this point as a voronoi point
+            verticesTab[nb_vertex-1].is_a_voronoi_center = true;
         }
-        else if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-1]) == 0)
-        {
-            insertionInArete(nb_vertex-1, i_face); // pb ici probablement
-            lawsonAroundVertex(nb_vertex-1);
-            break;
+    }
+
+    // now we insert precedent points into the mesh structure
+    for (int i_voronoi_vertex = 0; i_voronoi_vertex<nb_voronoi_vertices; i_voronoi_vertex++){
+
+
+        for (int i_face = 0; i_face < nb_faces; i_face++){
+
+            if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-nb_voronoi_vertices+i_voronoi_vertex]) > 0)
+            {
+                insertionTriangle(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex, i_face);
+                lawsonAroundVertex(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex);
+                break;
+            }
+            else if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-nb_voronoi_vertices+i_voronoi_vertex]) == 0)
+            {
+                insertionInArete(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex, i_face); // pb ici probablement
+                lawsonAroundVertex(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex);
+                break;
+            };
         };
     };
 }

@@ -22,6 +22,8 @@ private slots:
     void on_checkBox_Faces_stateChanged(int arg);     // Called when the "show faces" checkbox is checked
 
     void on_pushButton_released();
+    void on_voronoiButton_released();
+    void on_checkBox_Crust_stateChanged(int arg);
 
 private:
     Ui::MainWindow *ui;

@@ -54,8 +54,8 @@ void GLDisplayWidget::initializeGL()
     // Replace the values of the following two variables with
     // the path to the off-file of your choice
     // --------------------------------------------------------------------------------------
-    char path_to_off_files[512] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
-    //char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
+    //char path_to_off_files[512] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
+    char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
     char off_filename[64] = "triangle.off";
     // --------------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ void GLDisplayWidget::initializeGL()
     //_mesh.naiveInsertion();
     //_mesh.naiveInsertionAndLawson();
     _mesh.triangulationFromVertices();
-    //_mesh.testVoronoiCenter();
+    //_mesh.addVoronoiCentersToTriangulation();
     // --------------------------------------------------------------------------------------
 }
 
@@ -113,6 +113,10 @@ void GLDisplayWidget::paintGL()
     {
         drawFaces();
     }
+    if (show_crust)
+    {
+        drawEdges(true);
+    }
 }
 
 void GLDisplayWidget::resizeGL(int width, int height)
@@ -137,14 +141,20 @@ void GLDisplayWidget::drawVertices()
         if(_mesh.verticesTab[i_vertex].is_a_to_draw_point){
 
             glBegin(GL_POINTS);
-            if(i_vertex==_mesh.nb_vertex-1){glColor3f(1, 0, 0);}
-            glVertexDraw(_mesh.verticesTab[i_vertex]);
+            if(_mesh.verticesTab[i_vertex].is_a_voronoi_center){
+                glColor3f(0, 1, 0);
+                glVertexDraw(_mesh.verticesTab[i_vertex]);
+            }
+            else{
+                glColor3f(1, 1, 1);
+                glVertexDraw(_mesh.verticesTab[i_vertex]);
+            }
             glEnd();
         }
     }
 }
 
-void GLDisplayWidget::drawEdges()
+void GLDisplayWidget::drawEdges(bool crust)
 {
     // Draws all the edges of _mesh
     glColor3f(1, 0, 0); // Choose the color red
@@ -155,14 +165,31 @@ void GLDisplayWidget::drawEdges()
         for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
         { // For every face of _mesh.facesTab
             // It draws a line between one vertex and the next.
-            glBegin(GL_LINE_STRIP);
-            if(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_to_draw_point){
-                glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
-            }
-            if(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_to_draw_point){
-                glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
-            }
-            glEnd();
+            if(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_to_draw_point
+                    && _mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_to_draw_point){
+                // only plot edges that aren't "infinite
+
+                if(!crust){
+
+                    glBegin(GL_LINE_STRIP);
+                    glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
+                    glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
+                    glEnd();
+
+                }
+                else{
+                    glColor3f(0, 0, 1);
+                    if(!_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_voronoi_center
+                            && !_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_voronoi_center){
+
+                        glBegin(GL_LINE_STRIP);
+                        glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
+                        glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
+                        glEnd();
+                    }
+
+                }
+            };
         }
     }
 }
@@ -175,14 +202,17 @@ void GLDisplayWidget::drawFaces()
     { // For every face of _mesh.facesTab,
         // It draws the correspondiang triangle
         Face face = _mesh.facesTab[i_face];
-        glBegin(GL_TRIANGLES);
-        for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
-        {
-            if(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]].is_a_to_draw_point){
+
+        if(_mesh.verticesTab[face.i_vertex[0]].is_a_to_draw_point
+                && _mesh.verticesTab[face.i_vertex[1]].is_a_to_draw_point
+                && _mesh.verticesTab[face.i_vertex[2]].is_a_to_draw_point){
+            glBegin(GL_TRIANGLES);
+            for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
+            {
                 glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]]);
             }
+            glEnd();
         }
-        glEnd();
     }
 }
 
@@ -197,6 +227,10 @@ void GLDisplayWidget::add_random_vertex(){
     std::cout << rand_y << std::endl;
     Vertex v(rand_x,rand_y,0);
     _mesh.add_vertex(v);
+}
+
+void GLDisplayWidget::add_voronoi_centers(){
+    _mesh.addVoronoiCentersToTriangulation();
 }
 
 /*

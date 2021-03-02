@@ -19,7 +19,9 @@ public:
     bool show_vertecis;    // A boolean value that determine if the vertices are displayed
     bool show_edges;       // Same for edges
     bool show_faces;       // Same for faces
+    bool show_crust;
     void add_random_vertex();
+    void add_voronoi_centers();
 
 protected:
     // Mouse Management
@@ -28,7 +30,7 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
     void drawVertices();  // Display vertices of _mesh when appealed
-    void drawEdges();     // Same for edges
+    void drawEdges(bool crust=false);     // Same for edges
     void drawFaces();     // Same for faces
 
 private:
