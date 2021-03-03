@@ -7,8 +7,7 @@
 #include <iostream>
 #include "QDebug"
 
-// The following functions could be displaced into a module OpenGLDisplayMesh that would include Mesh
-// Draw a vertex
+
 void glVertexDraw(const Vertex &p)
 {
     glVertex3f(p.x(), p.y(), p.z());
@@ -16,24 +15,16 @@ void glVertexDraw(const Vertex &p)
 
 GLDisplayWidget::GLDisplayWidget(QWidget *parent) : QGLWidget(parent)
 {
-    // Initial point of view is set by _X, _Y, _Z
+    // Initial position of camera
     _X = 0;
     _Y = 0;
     _Z = 0;
-
-    // The angle of the point of view.
-    // You can rotate the shape by clicking and dragging on it.
     _angle = 0;
 
-    // When show_vertices is false, the vertices are not displayed
-    // When it becomes true, the vertices are displayed.
-    // You can switch from one value to another with the checkboxes on the GUI.
-    show_vertecis = false;
-    show_edges = false;
-    show_faces = false;
-
-    // The higher the value of this variable,
-    // the longer the representation of the Laplacian is extended
+    // To display vertices, edges or faces
+    displayVertices = false;
+    displayEdges = false;
+    displayFaces = false;
 
     // Update the scene
     connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
@@ -50,33 +41,33 @@ void GLDisplayWidget::initializeGL()
     glEnable(GL_LIGHT0);
     glEnable(GL_COLOR_MATERIAL);
 
-    // Construction of the mesh before it is displayed
-    // Replace the values of the following two variables with
-    // the path to the off-file of your choice
-    // --------------------------------------------------------------------------------------
-    //char path_to_off_files[512] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
-    char path_to_off_files[512] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
-    char off_filename[64] = "triangle.off";
-    // --------------------------------------------------------------------------------------
 
-    // Building the full path to the off file.
-    char path_to_off_file[512] = "";
-    strcat(path_to_off_file, path_to_off_files);
-    strcat(path_to_off_file, off_filename);
+    // Path to off file : put your path here
 
-    // Construction of the mesh before it is displayed
-    //_mesh.parseFile(path_to_off_file);
-    _mesh.parseTriFile(path_to_off_file); // if your file contains only vertices coordinates
+    char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
+    //char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
+    char off_file[32] = "triangle.off";
+    char * path_off_file;
+    path_off_file = strcat(path_folder, off_file);
+
+
+    // building mesh : comment/uncomment the options
+
+    // ---------------------------------------------------------
+    // option 1 : 3D structures like queen.off :
+    // ---------------------------------------------------------
+
+    //_mesh.parseFile(path_off_file);
     //_mesh.sew();
 
-    //Choose which action to apply to the selected file.
-    // --------------------------------------------------------------------------------------
-    //_mesh.computeLaplacian();
-    //_mesh.naiveInsertion();
-    //_mesh.naiveInsertionAndLawson();
+
+    // ---------------------------------------------------------
+    // option 2 : triangulation (if your file contains only vertices coordinates)
+    // ---------------------------------------------------------
+
+    _mesh.parseTriFile(path_off_file);
     _mesh.triangulationFromVertices();
-    //_mesh.addVoronoiCentersToTriangulation();
-    // --------------------------------------------------------------------------------------
+
 }
 
 void GLDisplayWidget::paintGL()
@@ -87,7 +78,6 @@ void GLDisplayWidget::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
-    //GLKMatrix4MakeLookAt(0,0,5,  0,0,0,   0,1,0);
 
     // Translation
     glTranslated(_X, _Y, _Z);
@@ -98,25 +88,11 @@ void GLDisplayWidget::paintGL()
     // Color for your mesh
     glColor3f(0, 1, 0);
 
-    // For each refresh of the window, vertices are displayed
-    // according to the value of draw_vertices.
-    if (show_vertecis)
-    {
-        drawVertices();
-    }
-    // It works the same for edges, faces and laplacian
-    if (show_edges)
-    {
-        drawEdges();
-    }
-    if (show_faces)
-    {
-        drawFaces();
-    }
-    if (show_crust)
-    {
-        drawEdges(true);
-    }
+    // drawings with respect to options chosen in the interactive window
+    if (displayVertices){drawVertices();}
+    if (displayEdges){drawEdges();}
+    if (displayFaces){drawFaces();}
+    if (displayCrust){drawEdges(true);}
 }
 
 void GLDisplayWidget::resizeGL(int width, int height)
@@ -125,91 +101,85 @@ void GLDisplayWidget::resizeGL(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
-    //GLKMatrix4MakePerspective(45.0f, (GLfloat)width/(GLfloat)height, 0.1f, 100.0f);
     updateGL();
 }
 
-// Draw functions
+// To draw vertices
 void GLDisplayWidget::drawVertices()
 {
-    // Draws all the vertices of _mesh
-    glColor3f(1, 1, 1); // Choose the color white
-    for (int i_vertex = 0; i_vertex < _mesh.nb_vertex; i_vertex++)
+    for (int ix_vertex = 0; ix_vertex < _mesh.n_vertices; ix_vertex++)
     {
 
         // draw only non infinite points
-        if(_mesh.verticesTab[i_vertex].is_a_to_draw_point){
+        if(_mesh.vertices[ix_vertex].is_a_to_draw_point){
 
             glBegin(GL_POINTS);
-            if(_mesh.verticesTab[i_vertex].is_a_voronoi_center){
+            if(_mesh.vertices[ix_vertex].is_a_voronoi_center){
                 glColor3f(0, 1, 0);
-                glVertexDraw(_mesh.verticesTab[i_vertex]);
+                glVertexDraw(_mesh.vertices[ix_vertex]);
             }
             else{
                 glColor3f(1, 1, 1);
-                glVertexDraw(_mesh.verticesTab[i_vertex]);
+                glVertexDraw(_mesh.vertices[ix_vertex]);
             }
             glEnd();
         }
     }
 }
 
+//To draw edges
 void GLDisplayWidget::drawEdges(bool crust)
 {
-    // Draws all the edges of _mesh
-    glColor3f(1, 0, 0); // Choose the color red
-    for (int i_face = 0; i_face < _mesh.nb_faces; i_face++)
+    for (int ix_face = 0; ix_face < _mesh.n_faces; ix_face++)
     {
-        Face face = _mesh.facesTab[i_face];
+        Face face = _mesh.faces[ix_face];
 
-        for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
-        { // For every face of _mesh.facesTab
-            // It draws a line between one vertex and the next.
-            if(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_to_draw_point
-                    && _mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_to_draw_point){
-                // only plot edges that aren't "infinite
+        for (int ix_vertex_in_triangle = 0; ix_vertex_in_triangle < 3; ix_vertex_in_triangle++)
+        {
+            if(_mesh.vertices[face.ix_vertex[(ix_vertex_in_triangle + 1) % 3]].is_a_to_draw_point
+                    && _mesh.vertices[face.ix_vertex[ix_vertex_in_triangle % 3]].is_a_to_draw_point){
+
+                // only plot edges that aren't "infinite"
 
                 if(!crust){
 
+                    glColor3f(1, 0, 0);
                     glBegin(GL_LINE_STRIP);
-                    glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
-                    glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
+                    glVertexDraw(_mesh.vertices[face.ix_vertex[ix_vertex_in_triangle % 3]]);
+                    glVertexDraw(_mesh.vertices[face.ix_vertex[(ix_vertex_in_triangle + 1) % 3]]);
                     glEnd();
 
                 }
-                else{
+                else if(!_mesh.vertices[face.ix_vertex[(ix_vertex_in_triangle + 1) % 3]].is_a_voronoi_center
+                            && !_mesh.vertices[face.ix_vertex[ix_vertex_in_triangle % 3]].is_a_voronoi_center){
+
                     glColor3f(0, 0, 1);
-                    if(!_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]].is_a_voronoi_center
-                            && !_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]].is_a_voronoi_center){
-
-                        glBegin(GL_LINE_STRIP);
-                        glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle % 3]]);
-                        glVertexDraw(_mesh.verticesTab[face.i_vertex[(i_vertex_in_triangle + 1) % 3]]);
-                        glEnd();
-                    }
-
+                    glBegin(GL_LINE_STRIP);
+                    glVertexDraw(_mesh.vertices[face.ix_vertex[ix_vertex_in_triangle % 3]]);
+                    glVertexDraw(_mesh.vertices[face.ix_vertex[(ix_vertex_in_triangle + 1) % 3]]);
+                    glEnd();
                 }
-            };
+            }
         }
     }
 }
 
+//To draw faces
 void GLDisplayWidget::drawFaces()
 {
-    // Draws all the faces of _mesh
-    glColor3f(0, 1, 0); // Choose the color green
-    for (int i_face = 0; i_face < _mesh.nb_faces; i_face++)
-    { // For every face of _mesh.facesTab,
-        // It draws the correspondiang triangle
-        Face face = _mesh.facesTab[i_face];
+    glColor3f(0, 1, 0);
 
-        if(_mesh.verticesTab[face.i_vertex[0]].is_a_to_draw_point
-                && _mesh.verticesTab[face.i_vertex[1]].is_a_to_draw_point
-                && _mesh.verticesTab[face.i_vertex[2]].is_a_to_draw_point){
+    for (int ix_face = 0; ix_face < _mesh.n_faces; ix_face++)
+    {
+        Face face = _mesh.faces[ix_face];
+
+        if(_mesh.vertices[face.ix_vertex[0]].is_a_to_draw_point
+                && _mesh.vertices[face.ix_vertex[1]].is_a_to_draw_point
+                && _mesh.vertices[face.ix_vertex[2]].is_a_to_draw_point){
             glBegin(GL_TRIANGLES);
-            for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
+            for (int ix_vertex_in_triangle = 0; ix_vertex_in_triangle < 3; ix_vertex_in_triangle++)
             {
-                glVertexDraw(_mesh.verticesTab[face.i_vertex[i_vertex_in_triangle]]);
+                glVertexDraw(_mesh.vertices[face.ix_vertex[ix_vertex_in_triangle]]);
             }
             glEnd();
         }
@@ -233,33 +203,31 @@ void GLDisplayWidget::add_voronoi_centers(){
     _mesh.addVoronoiCentersToTriangulation();
 }
 
-/*
-void GLDisplayWidget::drawLaplacian()
-{
-    // Draws a representation of the Laplacian for all vertices of _mesh.
-    glColor3f(0, 0, 1); // Choose the color blue
-    for (int i_vertex = 0; i_vertex < _mesh.nb_vertex; i_vertex++)
-    { // For every face of _mesh.facesTab,
-        Vertex &vertex = _mesh.verticesTab[i_vertex]; // the vertex
-        Vertex &dir = _mesh.laplacianTab[i_vertex]; // the laplacian
-
-        // Construct a line between the vertex and another distant
-        // point in the direction of the Laplacian.
-        glBegin(GL_LINE_STRIP);
-        glVertexDraw(vertex);
-        glVertexDraw(vertex + dir * coef_laplacian);
-        glEnd();
-    }
-}
-*/
 
 // - - - - - - - - - - - - Mouse Management  - - - - - - - - - - - - - - - -
 // When you click, the position of your mouse is saved
 void GLDisplayWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event != NULL)
+    if (event != NULL){
         _lastPosMouse = event->pos();
+//        QPoint _a = event->globalPos();
+//        QPointF _b = event->localPos();
+//        QPoint p = QWidget::mapFromGlobal(_a);
+//        QPointF _c = event->windowPos();
+//        QPointF _d = event->screenPos();
+
+
+
+//        std::cout << "last coords :" << std::endl;
+//        std::cout << _lastPosMouse.x() << " xy " << _lastPosMouse.y() << std::endl;
+//        std::cout << p.x() << " xy " << p.y() << std::endl;
+//        std::cout << _a.x() << " xy " << _a.y() << std::endl;
+//        std::cout << _b.x() << " xy " << _b.y() << std::endl;
+//        std::cout << _c.x() << " xy " << _c.y() << std::endl;
+//        std::cout << _d.x() << " xy " << _d.y() << std::endl;
+    }
 }
+
 
 // Mouse movement management
 void GLDisplayWidget::mouseMoveEvent(QMouseEvent *event)
@@ -280,7 +248,7 @@ void GLDisplayWidget::mouseMoveEvent(QMouseEvent *event)
 void GLDisplayWidget::wheelEvent(QWheelEvent *event)
 {
     QPoint numDegrees = event->angleDelta();
-    double stepZoom = 0.1;
+    float stepZoom = 0.1;
     if (!numDegrees.isNull())
     {
         _Z = (numDegrees.x() > 0 || numDegrees.y() > 0) ? _Z + stepZoom : _Z - stepZoom;

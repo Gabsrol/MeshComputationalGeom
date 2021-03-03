@@ -4,201 +4,86 @@
 #include <stdio.h>
 #include <string>
 
-// ----------------------------------------------
-// -------------------Functions------------------
-// ----------------------------------------------
 
-/**
- * Compute cotan between two vectors (described with vertices).
- *
- * @param vertex1, vertex2 the vertex describing the vectors.
- * @returns result of cotan operation.
- */
-double cotan(const Vertex vertex1, const Vertex vertex2)
-{
-    double cosalpha = (vertex1 * vertex2) / (vertex1.getNorm() * vertex2.getNorm());
-    double result = cosalpha / sqrt(1 - cosalpha * cosalpha);
-    return result;
-}
+//-----------------------------------------------------------------
+// Vertex
+//-----------------------------------------------------------------
 
-//-----------------------------------------------
-// --------------------Vertices------------------
-// ----------------------------------------------
+// Constructors
 
-/**
- * Default constructor. Set the coordinates to 0.
- */
-Vertex::Vertex()
-{
-    _x = 0;
-    _y = 0;
-    _z = 0;
-}
+Vertex::Vertex(){_x = 0;_y = 0;_z = 0;}
+Vertex::Vertex(float x_, float y_, float z_){_x = x_;_y = y_;_z = z_;}
 
-/**
- * Constructor with explicit data.
- *
- * @param x_, y_, z_ the coordinates of the vertex.
- */
-Vertex::Vertex(double x_, double y_, double z_)
-{
-    _x = x_;
-    _y = y_;
-    _z = z_;
-}
+// Getter
 
-/**
- * Getter of x.
- *
- * @returns x coordinate of the vertex.
- */
-double Vertex::x() const
-{
-    return _x;
-}
+float Vertex::x() const{return _x;}
+float Vertex::y() const{return _y;}
+float Vertex::z() const{return _z;}
 
-/**
- * Getter of y.
- *
- * @returns y coordinate of the vertex.
- */
-double Vertex::y() const
-{
-    return _y;
-}
+// Operators
 
-/**
- * Getter of z.
- *
- * @returns z coordinate of the vertex.
- */
-double Vertex::z() const
-{
-    return _z;
-}
-
-/**
- * Normalize the vector.
- *
- * @returns the normalized vector.
- */
-Vertex Vertex::getNormalized() const
-{
-    double norm = getNorm();
-    return Vertex(_x / norm, _y / norm, _z / norm);
-}
-
-/**
- * Operator !=. true if the other vertex has the same coordinates, false otherwise.
- *
- * @param other_vertex the vertex we want to compare it to.
- * @return result the boolean result.
- */
 bool Vertex::operator!=(const Vertex other_vertex) const
 {
     return ((x() != other_vertex.x()) | (y() != other_vertex.y()) | (z() != other_vertex.z()));
 }
 
-/**
- * Cross product (or vector product) with another vector.
- *
- * @param other_vertex the vector with which we want to do the cross product.
- * @return result the resulting vertex.
- */
 Vertex Vertex::cross(const Vertex &other_vertex) const
 {
-    double result_x = _y * other_vertex.z() - _z * other_vertex.y();
-    double result_y = _z * other_vertex.x() - _x * other_vertex.z();
-    double result_z = _x * other_vertex.y() - _y * other_vertex.x();
+    float result_x = _y * other_vertex.z() - _z * other_vertex.y();
+    float result_y = _z * other_vertex.x() - _x * other_vertex.z();
+    float result_z = _x * other_vertex.y() - _y * other_vertex.x();
     return Vertex(result_x, result_y, result_z);
 }
 
-// ----------------------------------------------
-// ------------------------Face------------------
-// ----------------------------------------------
+//-----------------------------------------------------------------
+// Face
+//-----------------------------------------------------------------
 
-/**
- * Default constructor.
- *
- * The face is described with three vertices. These vertices are
- * store into face object with their index. By default the three indexes are 0.
- */
-Face::Face()
-{
-    i_vertex[0] = 0;
-    i_vertex[1] = 0;
-    i_vertex[2] = 0;
-}
+// Constructors
 
-/**
- * Constructor with explicit data.
- *
- * The face is described with three vertices. These vertices are
- * store into face object with their index
- *
- * @param i_vertex0_, i_vertex1_, i_vertex2_ the indexes of the three vertex
- *     describing the triangle.
- */
-Face::Face(int i_vertex0_, int i_vertex1_, int i_vertex2_)
-{
-    i_vertex[0] = i_vertex0_;
-    i_vertex[1] = i_vertex1_;
-    i_vertex[2] = i_vertex2_;
-}
+Face::Face(){ix_vertex[0] = 0;ix_vertex[1] = 0;ix_vertex[2] = 0;}
+Face::Face(int ix_vertex0_, int ix_vertex1_, int ix_vertex2_){ix_vertex[0] = ix_vertex0_;ix_vertex[1] = ix_vertex1_;ix_vertex[2] = ix_vertex2_;}
 
-// ----------------------------------------------
-// ----------------------Mesh--------------------
-// ----------------------------------------------
+//-----------------------------------------------------------------
+// Mesh
+//-----------------------------------------------------------------
 
-/**
- * Default constructor.
- */
-Mesh::Mesh()
-{
-}
+// Constructors
 
-/**
- * Parse an off file and store the data into verticesTab and facesTab.
- *
- * @param file_name the path of the file.
- */
+Mesh::Mesh(){}
+
 void Mesh::parseFile(const char file_name[])
 {
-    // Lecture du fichier, et stockage dans verticesTab et facesTab
+    // reading file
+
     FILE *pFile;
     pFile = fopen(file_name, "r");
 
-    // Logs the success of the opening operation
-    if (pFile != NULL)
-    {
-        std::cout << "file " << file_name << " opened" << std::endl;
-    }
-    else
-    {
-        std::cout << "file " << file_name << " not opened" << std::endl;
-    }
+    // print success or failure
 
-    // Initilize verticesTab and nb_edges
-    verticesTab.clear();
-    int nb_edge = 0;
+    if (pFile != NULL){std::cout << "opening " << file_name << " succeeded" << std::endl;}
+    else{std::cout << "opening " << file_name << " failed" << std::endl;}
 
-    // Read the first line, that gives the number of vertices,
-    // the number of faces and the number of edges
-    fscanf(pFile, "%d %d %d\n", &nb_vertex, &nb_faces, &nb_edge);
-    // Logs the result
-    std::cout << "nb points: " << nb_vertex << ", nb faces: " << nb_faces << std::endl;
+    // Initialize vertices and number of edges
 
-    // Reserve the right size for verticesTab and facesTab.
-    verticesTab.reserve(nb_vertex);
-    facesTab.reserve(nb_faces);
+    vertices.clear();
+    int n_edges = 0;
+
+    // first line : n_vertices, n_faces, n_edges
+    fscanf(pFile, "%d %d %d\n", &n_vertices, &n_faces, &n_edges);
+    std::cout << "nb points: " << n_vertices << ", nb faces: " << n_faces << std::endl;
+
+    // Reserve the right size for vertices and faces.
+    vertices.reserve(n_vertices);
+    faces.reserve(n_faces);
 
     // Initialize working variables
-    double x, y, z;
-    double x_min, x_max, y_min, y_max, z_min, z_max;
+    float x, y, z;
+    float x_min, x_max, y_min, y_max, z_min, z_max;
 
     // 1st point :
-    fscanf(pFile, "%lf %lf %lf\n", &x, &y, &z); // Stockage de la premiere ligne
-    verticesTab.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur verticesTab
+    fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la premiere ligne
+    vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
 
     x_min = x;
     x_max = x;
@@ -208,10 +93,10 @@ void Mesh::parseFile(const char file_name[])
     z_max = z;
 
     // Tous les autres points :
-    for (int i_vertex = 1; i_vertex < nb_vertex; i_vertex++)
+    for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
-        fscanf(pFile, "%lf %lf %lf\n", &x, &y, &z); // Stockage de la ligne lue
-        verticesTab.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur verticesTab
+        fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la ligne lue
+        vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
 
         if (x < x_min)
         {
@@ -240,23 +125,23 @@ void Mesh::parseFile(const char file_name[])
     }
 
     // On remet Ã  jour la liste en centrant cette fois les coordonnees
-    double x_middle = (x_max + x_min) / 2;
-    double y_middle = (y_max + y_min) / 2;
-    double z_middle = (z_max + z_min) / 2;
+    float x_middle = (x_max + x_min) / 2;
+    float y_middle = (y_max + y_min) / 2;
+    float z_middle = (z_max + z_min) / 2;
 
     // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
-    for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
+    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
     {
-        Vertex vertex = verticesTab[i_vertex];
-        verticesTab[i_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
+        Vertex vertex = vertices[ix_vertex];
+        vertices[ix_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
     }
 
-    // Stocke toutes les faces dans facesTab
-    int n_face, i_vertex0, i_vertex1, i_vertex2;
-    for (int i_face = 0; i_face < nb_faces; i_face++)
+    // Stocke toutes les faces dans faces
+    int n_face, ix_vertex0, ix_vertex1, ix_vertex2;
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
     {
-        fscanf(pFile, "%d %d %d %d\n", &n_face, &i_vertex0, &i_vertex1, &i_vertex2);
-        facesTab.push_back(Face(i_vertex0, i_vertex1, i_vertex2));
+        fscanf(pFile, "%d %d %d %d\n", &n_face, &ix_vertex0, &ix_vertex1, &ix_vertex2);
+        faces.push_back(Face(ix_vertex0, ix_vertex1, ix_vertex2));
     }
 
     // Logs the ending of the process
@@ -274,29 +159,29 @@ void Mesh::sew()
 
     // vert_done est un liste de boolean. Si vert_done[5] == true, Ã§a signifie que le vertex 5 Ã  Ã©tÃ© traitÃ©
     // Initilisation de vert_done
-    bool vert_done[nb_vertex];
-    for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
+    bool vert_done[n_vertices];
+    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
     {
-        vert_done[i_vertex] = false;
+        vert_done[ix_vertex] = false;
     }
 
     // Map est un dict. ici : {(int, int) : (int, int), ...}
     std::map<std::pair<int, int>, std::pair<int, int>> myMap;
 
-    for (int i_face = 0; i_face < nb_faces; i_face++)
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
     {
         // On se balade dans toutes les faces dÃ©finie, et on rÃ©cupÃ¨re les indices des trois points(=vertex)
-        Face *face = &facesTab[i_face]; // Un pointeur qui pointe vers la i_eme face
+        Face *face = &faces[ix_face]; // Un pointeur qui pointe vers la i_eme face
 
         // On regarde si on a dÃ©ja traitÃ© les vertex(=points). Si non, on dit qu'on les a traitÃ©
         // puis on ajoute l'indice de la face comme face incidente au vertex(=point)
-        for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
+        for (int ix_vertex_in_triangle = 0; ix_vertex_in_triangle < 3; ix_vertex_in_triangle++)
         {
-            int i_vertex = face->i_vertex[i_vertex_in_triangle];
-            if (!vert_done[i_vertex])
+            int ix_vertex = face->ix_vertex[ix_vertex_in_triangle];
+            if (!vert_done[ix_vertex])
             {
-                verticesTab[i_vertex].i_incident_face = i_face; // On ajoute Ã  l'objet vertex une face inscidente
-                vert_done[i_vertex] = true;                     // On le considÃ¨re traitÃ©
+                vertices[ix_vertex].ix_incident_face = ix_face; // On ajoute Ã  l'objet vertex une face inscidente
+                vert_done[ix_vertex] = true;                     // On le considÃ¨re traitÃ©
             };
         }
 
@@ -305,32 +190,32 @@ void Mesh::sew()
         std::pair<int, int> i_other_face_and_i_other_vertex; //  {face id whose edge was'nt yet register in the map,  its opposed vertex id (0,1 or 2) }
 
         // Order vertex
-        for (int i_vertex_in_triangle = 0; i_vertex_in_triangle < 3; i_vertex_in_triangle++)
+        for (int ix_vertex_in_triangle = 0; ix_vertex_in_triangle < 3; ix_vertex_in_triangle++)
         {
-            if (face->i_vertex[(i_vertex_in_triangle + 1) % 3] < face->i_vertex[(i_vertex_in_triangle + 2) % 3])
+            if (face->ix_vertex[(ix_vertex_in_triangle + 1) % 3] < face->ix_vertex[(ix_vertex_in_triangle + 2) % 3])
             {
-                edge = {face->i_vertex[(i_vertex_in_triangle + 1) % 3], face->i_vertex[(i_vertex_in_triangle + 2) % 3]};
+                edge = {face->ix_vertex[(ix_vertex_in_triangle + 1) % 3], face->ix_vertex[(ix_vertex_in_triangle + 2) % 3]};
             }
             else
             {
-                edge = {face->i_vertex[(i_vertex_in_triangle + 2) % 3], face->i_vertex[(i_vertex_in_triangle + 1) % 3]};
+                edge = {face->ix_vertex[(ix_vertex_in_triangle + 2) % 3], face->ix_vertex[(ix_vertex_in_triangle + 1) % 3]};
             }
             // edge est la pair d'indice dans l'ordre croissant de l'arrÃ¨te
 
             if (myMap.find(edge) == myMap.end())
             { // Si l'arrÃ¨te n'est pas dans la map
                 // On l'ajoute
-                myMap[edge] = {i_face, i_vertex_in_triangle}; // (i_vertex0, i_vertex1) : (i_face, i_vertex) (c'est le vertex opposÃ©)
+                myMap[edge] = {ix_face, ix_vertex_in_triangle}; // (ix_vertex0, ix_vertex1) : (ix_face, ix_vertex) (c'est le vertex opposÃ©)
             }
             else
             {                                                     // L'arrÃªte appartient dÃ©ja Ã  un autre triangle de la map
-                i_other_face_and_i_other_vertex = myMap.at(edge); //(i_face de l'autre triangle, i_face dans l'autre triangle (0,1,2))
+                i_other_face_and_i_other_vertex = myMap.at(edge); //(ix_face de l'autre triangle, ix_face dans l'autre triangle (0,1,2))
                 int i_other_face = i_other_face_and_i_other_vertex.first;
                 int i_other_vertex = i_other_face_and_i_other_vertex.second;
 
-                face->adjacent_faces[i_vertex_in_triangle] = i_other_face; // On stocke l'indice de la face adjacente opposÃ© au vertex(=point) nÂ°2
+                face->adjacent_faces[ix_vertex_in_triangle] = i_other_face; // On stocke l'indice de la face adjacente opposÃ© au vertex(=point) nÂ°2
                 // On fait la mÃªme chose Ã  l'autre triangle
-                facesTab[i_other_face].adjacent_faces[i_other_vertex] = i_face;
+                faces[i_other_face].adjacent_faces[i_other_vertex] = ix_face;
             }
         }
     }
@@ -338,22 +223,22 @@ void Mesh::sew()
 }
 
 void Mesh::add_vertex(Vertex v){
-    verticesTab.append(v);
-    nb_vertex+=1;
+    vertices.push_back(v);
+    n_vertices+=1;
 
-    int i_vertex = verticesTab.size()-1;
-    for (int i_face = 0; i_face < nb_faces; i_face++)
+    int ix_vertex = vertices.size()-1;
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
     {
-        if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
+        if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) > 0)
         {
-            insertionTriangle(i_vertex, i_face);
-            lawsonAroundVertex(i_vertex);
+            insertionTriangle(ix_vertex, ix_face);
+            lawsonAroundVertex(ix_vertex);
             break;
         }
-        else if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) == 0)
+        else if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) == 0)
         {
-            insertionInArete(i_face, i_vertex); // pb ici probablement
-            lawsonAroundVertex(i_vertex);
+            insertionInEdge(ix_face, ix_vertex); // pb ici probablement
+            lawsonAroundVertex(ix_vertex);
             break;
         };
         // Il manque le cas inTriangleTest == 0 (ie sur une arete; cf insertion arete qui marche pas (?) pr le moment)
@@ -365,18 +250,18 @@ void Mesh::add_vertex(Vertex v){
  *
  * @param face for the test.
  * @param P the vertex for which we want to know if it's in the circumscribed circle.
- * @return double = 0 if P is on the circumscribed circle.
+ * @return float = 0 if P is on the circumscribed circle.
  *                > 0 if P is inside the circumscribed circle.
  *                < 0 if P is outside the circumscribed circle.
  */
-double Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
+float Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
 {
     // On analyse seulement les dimensions x, y
     // On regarde en projetant sur le paraboloÃ¯de z = x*x + y*y
 
-    Vertex A = verticesTab[face.i_vertex[0]];
-    Vertex B = verticesTab[face.i_vertex[1]];
-    Vertex C = verticesTab[face.i_vertex[2]];
+    Vertex A = vertices[face.ix_vertex[0]];
+    Vertex B = vertices[face.ix_vertex[1]];
+    Vertex C = vertices[face.ix_vertex[2]];
 
     Vertex A_hyper = Vertex(A.x(), A.y(), A.x() * A.x() + A.y() * A.y());
     Vertex B_hyper = Vertex(B.x(), B.y(), B.x() * B.x() + B.y() * B.y());
@@ -388,7 +273,7 @@ double Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
     Vertex AP_hyper = P_hyper - A_hyper;
 
     Vertex pdtVect = AB_hyper.cross(AC_hyper);
-    double pdtScal = -(pdtVect * AP_hyper);
+    float pdtScal = -(pdtVect * AP_hyper);
 
     return pdtScal;
 }
@@ -396,43 +281,43 @@ double Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
 /**
  * Tests whether an edge is Delaunay.
  *
- * @param i_face1 a face that contains the edge.
- * @param i_vertex_oppose_1 the index of the vertex opposite the edge
+ * @param ix_face1 a face that contains the edge.
+ * @param ix_vertex_oppose_1 the index of the vertex opposite the edge
  * @returns true if Delaunay, false otherwise.
  */
-bool Mesh::isDelaunay(int i_face1, int i_vertex_oppose_1)
+bool Mesh::isDelaunay(int ix_face1, int ix_vertex_oppose_1)
 {
 
-    Face face1 = facesTab[i_face1];
+    Face face1 = faces[ix_face1];
     Face face2;
-    if (face1.i_vertex[0] == i_vertex_oppose_1)
+    if (face1.ix_vertex[0] == ix_vertex_oppose_1)
     {
-        face2 = facesTab[face1.adjacent_faces[0]];
+        face2 = faces[face1.adjacent_faces[0]];
     }
-    else if (face1.i_vertex[1] == i_vertex_oppose_1)
+    else if (face1.ix_vertex[1] == ix_vertex_oppose_1)
     {
-        face2 = facesTab[face1.adjacent_faces[1]];
+        face2 = faces[face1.adjacent_faces[1]];
     }
     else
     {
-        face2 = facesTab[face1.adjacent_faces[2]];
+        face2 = faces[face1.adjacent_faces[2]];
     };
-    int i_vertex_oppose_2;
-    if (face2.adjacent_faces[0] == i_face1)
+    int ix_vertex_oppose_2;
+    if (face2.adjacent_faces[0] == ix_face1)
     {
-        i_vertex_oppose_2 = face2.i_vertex[0];
+        ix_vertex_oppose_2 = face2.ix_vertex[0];
     }
-    else if (face2.adjacent_faces[1] == i_face1)
+    else if (face2.adjacent_faces[1] == ix_face1)
     {
-        i_vertex_oppose_2 = face2.i_vertex[1];
+        ix_vertex_oppose_2 = face2.ix_vertex[1];
     }
     else
     {
-        i_vertex_oppose_2 = face2.i_vertex[2];
+        ix_vertex_oppose_2 = face2.ix_vertex[2];
     };
 
-    double test1 = vertexInCircumscribingCircle(face1, verticesTab[i_vertex_oppose_2]);
-    double test2 = vertexInCircumscribingCircle(face2, verticesTab[i_vertex_oppose_1]);
+    float test1 = vertexInCircumscribingCircle(face1, vertices[ix_vertex_oppose_2]);
+    float test2 = vertexInCircumscribingCircle(face2, vertices[ix_vertex_oppose_1]);
 
     // On demande Ã  ce que les points soient sur la bordure ou strictement Ã  l'extÃ©rieur du cercle
     return ((test1 <= 0) && (test2 <= 0));
@@ -442,119 +327,119 @@ bool Mesh::isDelaunay(int i_face1, int i_vertex_oppose_1)
  * Flips the edge.
  * It is therefore assumed that the edge is not on the contour.
  *
- * @param i_face1 the index of the first triangle to which the edge belongs.
+ * @param ix_face1 the index of the first triangle to which the edge belongs.
  * @param vertex_oppose_1_initial the opposite vertex, belonging to the
  *     second triangle whose edge is common.
  * @returns the 2 edges that frame the flipped edge, and not being in
  *     the same initial triangle as vertex_oppose_1_initial.
  */
-QList<std::pair<int, int>> Mesh::flipEdge(int i_face1, int i_vertex_oppose_1_initial)
+QList<std::pair<int, int>> Mesh::flipEdge(int ix_face1, int ix_vertex_oppose_1_initial)
 {
-    Face &face1 = facesTab[i_face1];
+    Face &face1 = faces[ix_face1];
 
-    int i_vertex_a = i_vertex_oppose_1_initial;
-    int i_vertex_b = -1;
-    int i_vertex_c = -1;
-    int i_vertex_d = -1;
-    int i_face2 = -1;
-    int i_face3 = -1;
-    int i_face4 = -1;
-    int i_face5 = -1;
-    int i_face6 = -1;
+    int ix_vertex_a = ix_vertex_oppose_1_initial;
+    int ix_vertex_b = -1;
+    int ix_vertex_c = -1;
+    int ix_vertex_d = -1;
+    int ix_face2 = -1;
+    int ix_face3 = -1;
+    int ix_face4 = -1;
+    int ix_face5 = -1;
+    int ix_face6 = -1;
 
-    if (i_vertex_oppose_1_initial == face1.i_vertex[0])
+    if (ix_vertex_oppose_1_initial == face1.ix_vertex[0])
     {
-        i_face2 = face1.adjacent_faces[0];
-        i_vertex_d = face1.i_vertex[1];
-        i_vertex_b = face1.i_vertex[2];
-        i_face4 = face1.adjacent_faces[1];
-        i_face3 = face1.adjacent_faces[2];
+        ix_face2 = face1.adjacent_faces[0];
+        ix_vertex_d = face1.ix_vertex[1];
+        ix_vertex_b = face1.ix_vertex[2];
+        ix_face4 = face1.adjacent_faces[1];
+        ix_face3 = face1.adjacent_faces[2];
     }
-    else if (i_vertex_oppose_1_initial == face1.i_vertex[1])
+    else if (ix_vertex_oppose_1_initial == face1.ix_vertex[1])
     {
-        i_face2 = face1.adjacent_faces[1];
-        i_vertex_d = face1.i_vertex[2];
-        i_vertex_b = face1.i_vertex[0];
-        i_face4 = face1.adjacent_faces[2];
-        i_face3 = face1.adjacent_faces[0];
+        ix_face2 = face1.adjacent_faces[1];
+        ix_vertex_d = face1.ix_vertex[2];
+        ix_vertex_b = face1.ix_vertex[0];
+        ix_face4 = face1.adjacent_faces[2];
+        ix_face3 = face1.adjacent_faces[0];
     }
     else
     {
-        i_face2 = face1.adjacent_faces[2];
-        i_vertex_d = face1.i_vertex[0];
-        i_vertex_b = face1.i_vertex[1];
-        i_face4 = face1.adjacent_faces[0];
-        i_face3 = face1.adjacent_faces[1];
+        ix_face2 = face1.adjacent_faces[2];
+        ix_vertex_d = face1.ix_vertex[0];
+        ix_vertex_b = face1.ix_vertex[1];
+        ix_face4 = face1.adjacent_faces[0];
+        ix_face3 = face1.adjacent_faces[1];
     };
-    Face &face2 = facesTab[i_face2];
+    Face &face2 = faces[ix_face2];
 
-    if (i_face1 == face2.adjacent_faces[0])
+    if (ix_face1 == face2.adjacent_faces[0])
     {
 
-        i_vertex_c = face2.i_vertex[0];
-        i_face6 = face2.adjacent_faces[1];
-        i_face5 = face2.adjacent_faces[2];
+        ix_vertex_c = face2.ix_vertex[0];
+        ix_face6 = face2.adjacent_faces[1];
+        ix_face5 = face2.adjacent_faces[2];
     }
-    else if (i_face1 == face2.adjacent_faces[1])
+    else if (ix_face1 == face2.adjacent_faces[1])
     {
 
-        i_vertex_c = face2.i_vertex[1];
-        i_face6 = face2.adjacent_faces[2];
-        i_face5 = face2.adjacent_faces[0];
+        ix_vertex_c = face2.ix_vertex[1];
+        ix_face6 = face2.adjacent_faces[2];
+        ix_face5 = face2.adjacent_faces[0];
     }
     else
     {
 
-        i_vertex_c = face2.i_vertex[2];
-        i_face6 = face2.adjacent_faces[0];
-        i_face5 = face2.adjacent_faces[1];
+        ix_vertex_c = face2.ix_vertex[2];
+        ix_face6 = face2.adjacent_faces[0];
+        ix_face5 = face2.adjacent_faces[1];
     };
 
     // Actualisation des donnees apres le flip
 
     // Faces 1 et 2
 
-    face1.i_vertex[0] = i_vertex_a;
-    face1.i_vertex[1] = i_vertex_d;
-    face1.i_vertex[2] = i_vertex_c;
+    face1.ix_vertex[0] = ix_vertex_a;
+    face1.ix_vertex[1] = ix_vertex_d;
+    face1.ix_vertex[2] = ix_vertex_c;
 
-    face1.adjacent_faces[0] = i_face6;
-    face1.adjacent_faces[1] = i_face2;
-    face1.adjacent_faces[2] = i_face3;
+    face1.adjacent_faces[0] = ix_face6;
+    face1.adjacent_faces[1] = ix_face2;
+    face1.adjacent_faces[2] = ix_face3;
 
-    face2.i_vertex[0] = i_vertex_c;
-    face2.i_vertex[1] = i_vertex_b;
-    face2.i_vertex[2] = i_vertex_a;
+    face2.ix_vertex[0] = ix_vertex_c;
+    face2.ix_vertex[1] = ix_vertex_b;
+    face2.ix_vertex[2] = ix_vertex_a;
 
-    face2.adjacent_faces[0] = i_face4;
-    face2.adjacent_faces[1] = i_face1;
-    face2.adjacent_faces[2] = i_face5;
+    face2.adjacent_faces[0] = ix_face4;
+    face2.adjacent_faces[1] = ix_face1;
+    face2.adjacent_faces[2] = ix_face5;
 
     // Faces 3 4 5 6
     // On actualise la face adj partant du vertex Ã  l'oppose de notre quadrilatere
 
     for (int i = 0; i < 3; i++)
     {
-        if (i_face4 >= 0 && facesTab[i_face4].adjacent_faces[i] == i_face1)
+        if (ix_face4 >= 0 && faces[ix_face4].adjacent_faces[i] == ix_face1)
         {
-            facesTab[i_face4].adjacent_faces[i] = i_face2;
+            faces[ix_face4].adjacent_faces[i] = ix_face2;
         };
-        if (i_face6 >= 0 && facesTab[i_face6].adjacent_faces[i] == i_face2)
+        if (ix_face6 >= 0 && faces[ix_face6].adjacent_faces[i] == ix_face2)
         {
-            facesTab[i_face6].adjacent_faces[i] = i_face1;
+            faces[ix_face6].adjacent_faces[i] = ix_face1;
         };
     };
 
     // Vertices
 
-    verticesTab[i_vertex_a].i_incident_face = i_face1;
-    verticesTab[i_vertex_d].i_incident_face = i_face1;
-    verticesTab[i_vertex_c].i_incident_face = i_face2;
-    verticesTab[i_vertex_b].i_incident_face = i_face2;
+    vertices[ix_vertex_a].ix_incident_face = ix_face1;
+    vertices[ix_vertex_d].ix_incident_face = ix_face1;
+    vertices[ix_vertex_c].ix_incident_face = ix_face2;
+    vertices[ix_vertex_b].ix_incident_face = ix_face2;
 
     QList<std::pair<int, int>> aretes_quadrilatere;
-    aretes_quadrilatere.append({i_face1, i_vertex_a}); // arete f6
-    aretes_quadrilatere.append({i_face2, i_vertex_a}); // arete f5
+    aretes_quadrilatere.push_back({ix_face1, ix_vertex_a}); // arete f6
+    aretes_quadrilatere.push_back({ix_face2, ix_vertex_a}); // arete f5
 
     return aretes_quadrilatere;
 }
@@ -563,10 +448,10 @@ QList<std::pair<int, int>> Mesh::flipEdge(int i_face1, int i_vertex_oppose_1_ini
  * Tests if A, B and C are oriented in the trigonometric direction.
  *
  * @param A, B, C vertices for the orientation test.
- * @returns double which is positive if A B C are oriented in the
+ * @returns float which is positive if A B C are oriented in the
  *     trigonometric direction, zero if aligned, negative otherwise.
 */
-double Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
+float Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
 {
     // On travaille dans le plan z = 0
     Vertex AB = B - A;
@@ -576,7 +461,7 @@ double Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
     Vertex BC_proj = Vertex(BC.x(), BC.y(), 0);
 
     Vertex vector = AB_proj.cross(BC_proj);
-    double value = vector.z(); //*nb_vertex;
+    float value = vector.z(); //*n_vertices;
     return value;
 }
 
@@ -585,19 +470,19 @@ double Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
  *
  * @param face used for the test.
  * @param vertex we want to know if it's inside the face.
- * @returns double which is positive if the vertex is inside the
+ * @returns float which is positive if the vertex is inside the
  *     triangle, 0 if it is on an edge, negative if it is outside.
 */
-double Mesh::inTriangleTest(Face face, Vertex vertex)
+float Mesh::inTriangleTest(Face face, Vertex vertex)
 {
     // On travaille dans le plan z = 0
-    Vertex A = verticesTab[face.i_vertex[0]];
-    Vertex B = verticesTab[face.i_vertex[1]];
-    Vertex C = verticesTab[face.i_vertex[2]];
+    Vertex A = vertices[face.ix_vertex[0]];
+    Vertex B = vertices[face.ix_vertex[1]];
+    Vertex C = vertices[face.ix_vertex[2]];
 
-    double test1 = orientationTest(A, B, vertex);
-    double test2 = orientationTest(B, C, vertex);
-    double test3 = orientationTest(C, A, vertex);
+    float test1 = orientationTest(A, B, vertex);
+    float test2 = orientationTest(B, C, vertex);
+    float test3 = orientationTest(C, A, vertex);
 
     if ((test1 > 0) && (test2 > 0) && (test3 > 0))
     {
@@ -621,337 +506,249 @@ double Mesh::inTriangleTest(Face face, Vertex vertex)
  * Insert a point in a face.
  *
  * @param i_P index of the point to be inserted.
- * @param i_face index of the face in which we want to insert the vertex.
+ * @param ix_face index of the face in which we want to insert the vertex.
  */
-void Mesh::insertionTriangle(int i_P, int i_face)
+void Mesh::insertionTriangle(int i_P, int ix_face)
 {
-    Face old_face = facesTab[i_face];
+    Face old_face = faces[ix_face];
 
     // Creer nouveaux triangles
 
-    int i_A = old_face.i_vertex[0];
-    int i_B = old_face.i_vertex[1];
-    int i_C = old_face.i_vertex[2];
+    int i_A = old_face.ix_vertex[0];
+    int i_B = old_face.ix_vertex[1];
+    int i_C = old_face.ix_vertex[2];
 
     // On prend les faces autour du triangle si les voisins existent
     // Si l'indice  = -1, c'est qu'il n'y a pas de face voisine (cf plus tard)
 
-    int i_face_A = old_face.adjacent_faces[0];
-    int i_face_B = old_face.adjacent_faces[1];
-    int i_face_C = old_face.adjacent_faces[2];
+    int ix_face_A = old_face.adjacent_faces[0];
+    int ix_face_B = old_face.adjacent_faces[1];
+    int ix_face_C = old_face.adjacent_faces[2];
 
-    Vertex &A = verticesTab[i_A];
-    Vertex &B = verticesTab[i_B];
-    Vertex &C = verticesTab[i_C];
-    Vertex &P = verticesTab[i_P];
+    Vertex &A = vertices[i_A];
+    Vertex &B = vertices[i_B];
+    Vertex &C = vertices[i_C];
+    Vertex &P = vertices[i_P];
 
     // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
 
     // ABP
-    facesTab[i_face] = Face(i_A, i_B, i_P);
-    int i_ABP = i_face;
+    faces[ix_face] = Face(i_A, i_B, i_P);
+    int i_ABP = ix_face;
 
     // BCP
-    facesTab.append(Face(i_B, i_C, i_P));
-    int i_BCP = nb_faces;
+    faces.push_back(Face(i_B, i_C, i_P));
+    int i_BCP = n_faces;
 
     // CAP
-    facesTab.append(Face(i_C, i_A, i_P));
-    int i_CAP = nb_faces + 1;
+    faces.push_back(Face(i_C, i_A, i_P));
+    int i_CAP = n_faces + 1;
 
 
 
-    Face &ABP = facesTab[i_ABP];
-    Face &BCP = facesTab[i_BCP];
-    Face &CAP = facesTab[i_CAP];
+    Face &ABP = faces[i_ABP];
+    Face &BCP = faces[i_BCP];
+    Face &CAP = faces[i_CAP];
 
     // Actualiser paramÃ¨tres du Mesh
 
-    nb_faces += 2;
+    n_faces += 2;
 
     // Ajouter les adjacences des nouveaux triangles
 
     ABP.adjacent_faces[0] = i_BCP;
     ABP.adjacent_faces[1] = i_CAP;
-    ABP.adjacent_faces[2] = i_face_C;
+    ABP.adjacent_faces[2] = ix_face_C;
 
     BCP.adjacent_faces[0] = i_CAP;
     BCP.adjacent_faces[1] = i_ABP;
-    BCP.adjacent_faces[2] = i_face_A;
+    BCP.adjacent_faces[2] = ix_face_A;
 
     CAP.adjacent_faces[0] = i_ABP;
     CAP.adjacent_faces[1] = i_BCP;
-    CAP.adjacent_faces[2] = i_face_B;
+    CAP.adjacent_faces[2] = ix_face_B;
 
     // Adapter les adjacences des triangles autour
 
     for (int i = 0; i < 3; i++)
     {
-        if (i_face_A >= 0 && facesTab[i_face_A].adjacent_faces[i] == i_face)
+        if (ix_face_A >= 0 && faces[ix_face_A].adjacent_faces[i] == ix_face)
         {
-            facesTab[i_face_A].adjacent_faces[i] = i_BCP;
+            faces[ix_face_A].adjacent_faces[i] = i_BCP;
         };
-        if (i_face_B >= 0 && facesTab[i_face_B].adjacent_faces[i] == i_face)
+        if (ix_face_B >= 0 && faces[ix_face_B].adjacent_faces[i] == ix_face)
         {
-            facesTab[i_face_B].adjacent_faces[i] = i_CAP;
+            faces[ix_face_B].adjacent_faces[i] = i_CAP;
         };
-        if (i_face_C >= 0 && facesTab[i_face_C].adjacent_faces[i] == i_face)
+        if (ix_face_C >= 0 && faces[ix_face_C].adjacent_faces[i] == ix_face)
         {
-            facesTab[i_face_C].adjacent_faces[i] = i_ABP;
+            faces[ix_face_C].adjacent_faces[i] = i_ABP;
         };
     }
 
-    // Modifier les i_incident_face des Vertices
+    // Modifier les ix_incident_face des Vertices
 
-    A.i_incident_face = i_ABP;
-    B.i_incident_face = i_BCP;
-    C.i_incident_face = i_CAP;
-    P.i_incident_face = i_ABP;
+    A.ix_incident_face = i_ABP;
+    B.ix_incident_face = i_BCP;
+    C.ix_incident_face = i_CAP;
+    P.ix_incident_face = i_ABP;
 }
 
 /**
  * Inserts a vertex on an edge
  *
- * @param i_face1 index of the face containing the edge.
+ * @param ix_face1 index of the face containing the edge.
  * @param i_P index of the vertex to be inserted.
  */
-void Mesh::insertionInArete(int i_face1, int i_P)
+void Mesh::insertionInEdge(int ix_face1, int i_P)
 {
-    Face face1 = facesTab[i_face1];
+    Face face1 = faces[ix_face1];
 
     int i_A = -1;
     int i_B = -1;
     int i_C = -1;
     int i_D = -1;
-    int i_face2 = -1;
-    int i_face3 = -1;
-    int i_face4 = -1;
-    int i_face5 = -1;
-    int i_face6 = -1;
+    int ix_face2 = -1;
+    int ix_face3 = -1;
+    int ix_face4 = -1;
+    int ix_face5 = -1;
+    int ix_face6 = -1;
 
-    if (orientationTest(verticesTab[face1.i_vertex[0]], verticesTab[face1.i_vertex[1]], verticesTab[i_P]) == 0)
+    if (orientationTest(vertices[face1.ix_vertex[0]], vertices[face1.ix_vertex[1]], vertices[i_P]) == 0)
     {
-        i_A = face1.i_vertex[2];
-        i_B = face1.i_vertex[0];
-        i_D = face1.i_vertex[1];
-        i_face2 = face1.adjacent_faces[2];
-        i_face6 = face1.adjacent_faces[0];
-        i_face3 = face1.adjacent_faces[1];
+        i_A = face1.ix_vertex[2];
+        i_B = face1.ix_vertex[0];
+        i_D = face1.ix_vertex[1];
+        ix_face2 = face1.adjacent_faces[2];
+        ix_face6 = face1.adjacent_faces[0];
+        ix_face3 = face1.adjacent_faces[1];
     }
-    else if (orientationTest(verticesTab[face1.i_vertex[1]], verticesTab[face1.i_vertex[2]], verticesTab[i_P]) == 0)
+    else if (orientationTest(vertices[face1.ix_vertex[1]], vertices[face1.ix_vertex[2]], vertices[i_P]) == 0)
     {
-        i_A = face1.i_vertex[0];
-        i_B = face1.i_vertex[1];
-        i_D = face1.i_vertex[2];
-        i_face2 = face1.adjacent_faces[0];
-        i_face6 = face1.adjacent_faces[1];
-        i_face3 = face1.adjacent_faces[2];
+        i_A = face1.ix_vertex[0];
+        i_B = face1.ix_vertex[1];
+        i_D = face1.ix_vertex[2];
+        ix_face2 = face1.adjacent_faces[0];
+        ix_face6 = face1.adjacent_faces[1];
+        ix_face3 = face1.adjacent_faces[2];
     }
-    else if (orientationTest(verticesTab[face1.i_vertex[2]], verticesTab[face1.i_vertex[0]], verticesTab[i_P]) == 0)
+    else if (orientationTest(vertices[face1.ix_vertex[2]], vertices[face1.ix_vertex[0]], vertices[i_P]) == 0)
     {
-        i_A = face1.i_vertex[1];
-        i_B = face1.i_vertex[2];
-        i_D = face1.i_vertex[0];
-        i_face2 = face1.adjacent_faces[1];
-        i_face6 = face1.adjacent_faces[2];
-        i_face3 = face1.adjacent_faces[0];
+        i_A = face1.ix_vertex[1];
+        i_B = face1.ix_vertex[2];
+        i_D = face1.ix_vertex[0];
+        ix_face2 = face1.adjacent_faces[1];
+        ix_face6 = face1.adjacent_faces[2];
+        ix_face3 = face1.adjacent_faces[0];
     };
 
     for (int i = 0; i < 3; i++)
     {
-        if (facesTab[i_face2].adjacent_faces[i] == i_face1)
+        if (faces[ix_face2].adjacent_faces[i] == ix_face1)
         {
-            i_C = facesTab[i_face2].i_vertex[i];
-            i_face4 = facesTab[i_face2].adjacent_faces[(i + 1) % 3];
-            i_face5 = facesTab[i_face2].adjacent_faces[(i + 2) % 3];
+            i_C = faces[ix_face2].ix_vertex[i];
+            ix_face4 = faces[ix_face2].adjacent_faces[(i + 1) % 3];
+            ix_face5 = faces[ix_face2].adjacent_faces[(i + 2) % 3];
         };
     };
 
-    Vertex &A = verticesTab[i_A];
-    Vertex &B = verticesTab[i_B];
-    Vertex &C = verticesTab[i_C];
-    Vertex &D = verticesTab[i_D];
-    Vertex &P = verticesTab[i_P];
+    Vertex &A = vertices[i_A];
+    Vertex &B = vertices[i_B];
+    Vertex &C = vertices[i_C];
+    Vertex &D = vertices[i_D];
+    Vertex &P = vertices[i_P];
 
     // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
 
-    facesTab[i_face1] = Face(i_D, i_A, i_P); // DAP
-    facesTab[i_face2] = Face(i_C, i_D, i_P); // CDP
+    faces[ix_face1] = Face(i_D, i_A, i_P); // DAP
+    faces[ix_face2] = Face(i_C, i_D, i_P); // CDP
 
-    facesTab.append(Face(i_A, i_B, i_P)); // ABP
-    facesTab.append(Face(i_B, i_C, i_P)); // BCP
+    faces.push_back(Face(i_A, i_B, i_P)); // ABP
+    faces.push_back(Face(i_B, i_C, i_P)); // BCP
 
-    int i_DAP = i_face1;
-    int i_CDP = i_face2;
-    int i_ABP = nb_faces;
-    int i_BCP = nb_faces + 1;
+    int i_DAP = ix_face1;
+    int i_CDP = ix_face2;
+    int i_ABP = n_faces;
+    int i_BCP = n_faces + 1;
 
-    Face &DAP = facesTab[i_DAP];
-    Face &CDP = facesTab[i_CDP];
-    Face &ABP = facesTab[i_ABP];
-    Face &BCP = facesTab[i_BCP];
+    Face &DAP = faces[i_DAP];
+    Face &CDP = faces[i_CDP];
+    Face &ABP = faces[i_ABP];
+    Face &BCP = faces[i_BCP];
 
     // Actualiser paramÃ¨tres du Mesh
 
-    nb_faces += 2;
+    n_faces += 2;
 
     // Ajouter les adjacences des nouveaux triangles
 
     DAP.adjacent_faces[0] = i_ABP;
     DAP.adjacent_faces[1] = i_CDP;
-    DAP.adjacent_faces[2] = i_face6;
+    DAP.adjacent_faces[2] = ix_face6;
 
     CDP.adjacent_faces[0] = i_DAP;
     CDP.adjacent_faces[1] = i_BCP;
-    CDP.adjacent_faces[2] = i_face5;
+    CDP.adjacent_faces[2] = ix_face5;
 
     ABP.adjacent_faces[0] = i_BCP;
     ABP.adjacent_faces[1] = i_DAP;
-    ABP.adjacent_faces[2] = i_face3;
+    ABP.adjacent_faces[2] = ix_face3;
 
     BCP.adjacent_faces[0] = i_CDP;
     BCP.adjacent_faces[1] = i_ABP;
-    BCP.adjacent_faces[2] = i_face4;
+    BCP.adjacent_faces[2] = ix_face4;
 
     // Adapter les adjacences des triangles autour
 
     for (int i = 0; i < 3; i++)
     {
-        if (i_face3 >= 0 && facesTab[i_face3].adjacent_faces[i] == i_face1)
+        if (ix_face3 >= 0 && faces[ix_face3].adjacent_faces[i] == ix_face1)
         {
-            facesTab[i_face3].adjacent_faces[i] = i_ABP;
+            faces[ix_face3].adjacent_faces[i] = i_ABP;
         };
-        if (i_face4 >= 0 && facesTab[i_face4].adjacent_faces[i] == i_face2)
+        if (ix_face4 >= 0 && faces[ix_face4].adjacent_faces[i] == ix_face2)
         {
-            facesTab[i_face4].adjacent_faces[i] = i_BCP;
+            faces[ix_face4].adjacent_faces[i] = i_BCP;
         };
-        if (i_face5 >= 0 && facesTab[i_face5].adjacent_faces[i] == i_face2)
+        if (ix_face5 >= 0 && faces[ix_face5].adjacent_faces[i] == ix_face2)
         {
-            facesTab[i_face5].adjacent_faces[i] = i_CDP;
+            faces[ix_face5].adjacent_faces[i] = i_CDP;
         };
-        if (i_face6 >= 0 && facesTab[i_face6].adjacent_faces[i] == i_face1)
+        if (ix_face6 >= 0 && faces[ix_face6].adjacent_faces[i] == ix_face1)
         {
-            facesTab[i_face6].adjacent_faces[i] = i_DAP;
+            faces[ix_face6].adjacent_faces[i] = i_DAP;
         };
     }
 
-    // Modifier les i_incident_face des Vertices
+    // Modifier les ix_incident_face des Vertices
 
-    A.i_incident_face = i_ABP;
-    B.i_incident_face = i_BCP;
-    C.i_incident_face = i_CDP;
-    D.i_incident_face = i_DAP;
-    P.i_incident_face = i_ABP;
-}
-
-/**
- * A naive mesh is created from points by inserting them successively.
- */
-void Mesh::naiveInsertion()
-{
-    // On ne prend pas en compte la dimension z
-    // On part d'un maillage sans triangle, seulement des points
-
-    // Tout d'abord, on crÃ©e le rectangle qui va contenir tous les points
-
-    double x_min = verticesTab[0].x();
-    double x_max = verticesTab[0].x();
-    double y_min = verticesTab[0].y();
-    double y_max = verticesTab[0].y();
-
-    for (int i_vertex = 1; i_vertex < nb_vertex; i_vertex++)
-    {
-        if (verticesTab[i_vertex].x() < x_min)
-        {
-            x_min = verticesTab[i_vertex].x();
-        };
-        if (verticesTab[i_vertex].x() > x_max)
-        {
-            x_max = verticesTab[i_vertex].x();
-        };
-        if (verticesTab[i_vertex].y() < y_min)
-        {
-            y_min = verticesTab[i_vertex].y();
-        };
-        if (verticesTab[i_vertex].y() > y_max)
-        {
-            y_max = verticesTab[i_vertex].y();
-        };
-    };
-
-    x_min -= (x_max - x_min) / 20;
-    x_max += (x_max - x_min) / 20;
-    y_min -= (y_max - y_min) / 20;
-    y_max += (y_max - y_min) / 20;
-
-    verticesTab.append(Vertex(x_min, y_min, 0)); // bas gauche
-    verticesTab.append(Vertex(x_min, y_max, 0)); // haut gauche
-    verticesTab.append(Vertex(x_max, y_min, 0)); // bas droit
-    verticesTab.append(Vertex(x_max, y_max, 0)); // haut droit
-
-    nb_vertex += 4;
-
-    Vertex &bg = verticesTab[nb_vertex - 4];
-    Vertex &hg = verticesTab[nb_vertex - 3];
-    Vertex &bd = verticesTab[nb_vertex - 2];
-    Vertex &hd = verticesTab[nb_vertex - 1];
-
-    facesTab.append(Face(nb_vertex - 4, nb_vertex - 2, nb_vertex - 3)); // Triangle bas gauche
-    facesTab.append(Face(nb_vertex - 1, nb_vertex - 3, nb_vertex - 2)); // Triangle haut droit
-
-    nb_faces += 2;
-
-    Face &triangle_bg = facesTab[nb_faces - 2];
-    Face &triangle_hd = facesTab[nb_faces - 1];
-
-    bg.i_incident_face = nb_faces - 2;
-    hg.i_incident_face = nb_faces - 2;
-    bd.i_incident_face = nb_faces - 1;
-    hd.i_incident_face = nb_faces - 1;
-
-    triangle_bg.adjacent_faces[0] = nb_faces - 1;
-    triangle_bg.adjacent_faces[1] = -1;
-    triangle_bg.adjacent_faces[2] = -1;
-
-    triangle_hd.adjacent_faces[0] = nb_faces - 2;
-    triangle_hd.adjacent_faces[1] = -1;
-    triangle_hd.adjacent_faces[2] = -1;
-
-    for (int i_vertex = 0; i_vertex < (nb_vertex - 4); i_vertex++)
-    {
-        for (int i_face = 0; i_face < nb_faces; i_face++)
-        {
-
-            if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
-            {
-                insertionTriangle(i_vertex, i_face);
-                break;
-            };
-            // Il manque le cas inTriangleTest == 0 (ie sur une arete; cf insertion arete qui marche pas (?) pr le moment)
-        };
-    };
+    A.ix_incident_face = i_ABP;
+    B.ix_incident_face = i_BCP;
+    C.ix_incident_face = i_CDP;
+    D.ix_incident_face = i_DAP;
+    P.ix_incident_face = i_ABP;
 }
 
 /**
  * Tests whether the edge opposite the vertex is on the contour.
  *
- * @param i_face index of the face containing the edge.
- * @param i_vertex index of the vertex opposite the edge.
+ * @param ix_face index of the face containing the edge.
+ * @param ix_vertex index of the vertex opposite the edge.
  * @returns true if the edge is on the contour, false otherwise.
  */
-bool Mesh::areteEnBordure(int i_face, int i_vertex)
+bool Mesh::infinitEdge(int ix_face, int ix_vertex)
 {
-    if (facesTab[i_face].i_vertex[0] == i_vertex)
+    if (faces[ix_face].ix_vertex[0] == ix_vertex)
     {
-        return facesTab[i_face].adjacent_faces[0] < 0;
+        return faces[ix_face].adjacent_faces[0] < 0;
     }
-    else if (facesTab[i_face].i_vertex[1] == i_vertex)
+    else if (faces[ix_face].ix_vertex[1] == ix_vertex)
     {
-        return facesTab[i_face].adjacent_faces[1] < 0;
+        return faces[ix_face].adjacent_faces[1] < 0;
     }
-    else if (facesTab[i_face].i_vertex[2] == i_vertex)
+    else if (faces[ix_face].ix_vertex[2] == ix_vertex)
     {
-        return facesTab[i_face].adjacent_faces[2] < 0;
+        return faces[ix_face].adjacent_faces[2] < 0;
     }
     else
     {
@@ -966,16 +763,16 @@ bool Mesh::areteEnBordure(int i_face, int i_vertex)
  */
 void Mesh::lawsonAroundVertex(int i_P)
 {
-    // On part d'un vertex i_P (dans i_face) qui vient d'Ãªtre insere, et on fait des flips recursifs pour qu'a la fin il soit insere et tout soit Delaunay
+    // On part d'un vertex i_P (dans ix_face) qui vient d'Ãªtre insere, et on fait des flips recursifs pour qu'a la fin il soit insere et tout soit Delaunay
     // On recupere les trois ou quatre aretes autour du P dans une file
     QList<std::pair<int, int>> atraiter;
-    for (int i_face = 0; i_face < nb_faces; i_face++)
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
     {
         for (int i = 0; i < 3; i++)
         {
-            if (facesTab[i_face].i_vertex[i] == i_P)
+            if (faces[ix_face].ix_vertex[i] == i_P)
             {
-                atraiter.append({i_face, i_P});
+                atraiter.push_back({ix_face, i_P});
             }
         }
     }
@@ -983,145 +780,31 @@ void Mesh::lawsonAroundVertex(int i_P)
     while (!atraiter.isEmpty())
     {
         std::pair<int, int> face_et_vertex = atraiter.takeFirst();
-        int i_face = face_et_vertex.first;
-        int i_vertex = face_et_vertex.second;
+        int ix_face = face_et_vertex.first;
+        int ix_vertex = face_et_vertex.second;
 
-        if (!areteEnBordure(i_face, i_vertex))
+        if (!infinitEdge(ix_face, ix_vertex))
         {
-            if (!isDelaunay(i_face, i_vertex))
+            if (!isDelaunay(ix_face, ix_vertex))
             {
-                QList<std::pair<int, int>> nouvelle_queue = flipEdge(i_face, i_vertex); // On fait le flip et rÃ©cupÃ¨re les arete Ã  retester
+                QList<std::pair<int, int>> nouvelle_queue = flipEdge(ix_face, ix_vertex); // On fait le flip et rÃ©cupÃ¨re les arete Ã  retester
                 while (!nouvelle_queue.isEmpty())
                 {
 
                     std::pair<int, int> face_et_vertex_quadrilatere = nouvelle_queue.takeFirst();
-                    int i_face_quadrilatere = face_et_vertex_quadrilatere.first;
-                    int i_vertex_quadrilatere = face_et_vertex_quadrilatere.second;
-                    if (!areteEnBordure(i_face_quadrilatere, i_vertex_quadrilatere))
+                    int ix_face_quadrilatere = face_et_vertex_quadrilatere.first;
+                    int ix_vertex_quadrilatere = face_et_vertex_quadrilatere.second;
+                    if (!infinitEdge(ix_face_quadrilatere, ix_vertex_quadrilatere))
                     {
-                        if (!isDelaunay(i_face_quadrilatere, i_vertex_quadrilatere))
+                        if (!isDelaunay(ix_face_quadrilatere, ix_vertex_quadrilatere))
                         {
-                            atraiter.append(face_et_vertex_quadrilatere);
+                            atraiter.push_back(face_et_vertex_quadrilatere);
                         };
                     };
                 };
             };
         };
     };
-}
-
-/**
- * Similar to naiveInsertion, ensuring Delaunay after each insertion.
- */
-void Mesh::naiveInsertionAndLawson()
-{
-    // On ne prend pas en compte la dimension z
-    // On part d'un maillage sans triangle, seulement des points
-
-    // Tout d'abord, on crÃ©e le rectangle qui va contenir tous les points
-
-    double x_min = verticesTab[0].x();
-    double x_max = verticesTab[0].x();
-    double y_min = verticesTab[0].y();
-    double y_max = verticesTab[0].y();
-
-    for (int i_vertex = 1; i_vertex < nb_vertex; i_vertex++)
-    {
-        if (verticesTab[i_vertex].x() < x_min)
-        {
-            x_min = verticesTab[i_vertex].x();
-        };
-        if (verticesTab[i_vertex].x() > x_max)
-        {
-            x_max = verticesTab[i_vertex].x();
-        };
-        if (verticesTab[i_vertex].y() < y_min)
-        {
-            y_min = verticesTab[i_vertex].y();
-        };
-        if (verticesTab[i_vertex].y() > y_max)
-        {
-            y_max = verticesTab[i_vertex].y();
-        };
-    };
-
-    double x_min2 = x_min - (x_max - x_min) / 20;
-    double x_max2 = x_max + (x_max - x_min) / 20;
-    double y_min2 = y_min - (y_max - y_min) / 20;
-    double y_max2 = y_max + (y_max - y_min) / 20;
-
-    verticesTab.append(Vertex(x_min2, y_min2, 0)); // bas gauche
-    verticesTab.append(Vertex(x_min2, y_max2, 0)); // haut gauche
-    verticesTab.append(Vertex(x_max2, y_min2, 0)); // bas droit
-    verticesTab.append(Vertex(x_max2, y_max2, 0)); // haut droit
-
-    nb_vertex += 4;
-
-    Vertex &bg = verticesTab[nb_vertex - 4];
-    Vertex &hg = verticesTab[nb_vertex - 3];
-    Vertex &bd = verticesTab[nb_vertex - 2];
-    Vertex &hd = verticesTab[nb_vertex - 1];
-
-    facesTab.append(Face(nb_vertex - 4, nb_vertex - 2, nb_vertex - 3)); // Triangle bas gauche
-    facesTab.append(Face(nb_vertex - 1, nb_vertex - 3, nb_vertex - 2)); // Triangle haut droit
-
-    nb_faces += 2;
-
-    Face &triangle_bg = facesTab[nb_faces - 2];
-    Face &triangle_hd = facesTab[nb_faces - 1];
-
-    bg.i_incident_face = nb_faces - 2;
-    hg.i_incident_face = nb_faces - 2;
-    bd.i_incident_face = nb_faces - 1;
-    hd.i_incident_face = nb_faces - 1;
-
-    triangle_bg.adjacent_faces[0] = nb_faces - 1;
-    triangle_bg.adjacent_faces[1] = -1;
-    triangle_bg.adjacent_faces[2] = -1;
-
-    triangle_hd.adjacent_faces[0] = nb_faces - 2;
-    triangle_hd.adjacent_faces[1] = -1;
-    triangle_hd.adjacent_faces[2] = -1;
-
-    for (int i_vertex = 0; i_vertex < (nb_vertex - 4); i_vertex++)
-    {
-        for (int i_face = 0; i_face < nb_faces; i_face++)
-        {
-            if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
-            {
-                insertionTriangle(i_vertex, i_face);
-                lawsonAroundVertex(i_vertex);
-                break;
-            }
-            else if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) == 0)
-            {
-                insertionInArete(i_face, i_vertex); // pb ici probablement
-                lawsonAroundVertex(i_vertex);
-                break;
-            };
-        };
-    };
-}
-
-// ----------------------------------------------
-// --------Useful function for circulator--------
-// ----------------------------------------------
-
-/**
- * Finds the index (0, 1 or 2) of a vertex belonging to a face
- *
- * @param face we're working on
- * @param i_vertex index of the vertex in the mesh
- * @return 0, 1 or 2, the index of the vertex within the face
- */
-int find_i_vertex_in_face(Face *face, int i_vertex)
-{
-    int i_vertex_in_face = 0;
-    while (face->i_vertex[i_vertex_in_face] != i_vertex)
-    {
-        i_vertex_in_face++;
-    }
-    return i_vertex_in_face;
 }
 
 
@@ -1131,14 +814,14 @@ int find_i_vertex_in_face(Face *face, int i_vertex)
 
 
 /*
- * Parse a file with vertices and store the data into verticesTab.
+ * Parse a file with vertices and store the data into vertices.
 
  * params:
   - file_name the path of the file.
 */
 void Mesh::parseTriFile(const char file_name[])
 {
-    // Lecture du fichier, et stockage dans verticesTab
+    // Lecture du fichier, et stockage dans vertices
     FILE *pFile;
     pFile = fopen(file_name, "r");
 
@@ -1152,28 +835,27 @@ void Mesh::parseTriFile(const char file_name[])
         std::cout << "file " << file_name << " not opened" << std::endl;
     }
 
-    // Initilize verticesTab and nb_edges
-    verticesTab.clear();
-    facesTab.clear();
+    // Initialize vertices and n_edgess
+    vertices.clear();
+    faces.clear();
 
     // Read the first line, that gives the number of vertices,
     // the number of faces and the number of edges
-    fscanf(pFile, "%d\n", &nb_vertex);
+    fscanf(pFile, "%d\n", &n_vertices);
     // Logs the result
-    std::cout << "nb points: " << nb_vertex << std::endl;
-    nb_faces = 0;
+    std::cout << "nb points: " << n_vertices << std::endl;
+    n_faces = 0;
 
-    // Reserve the right size for verticesTab and facesTab.
-    verticesTab.reserve(nb_vertex);
-    int nb_edges = 0;
+    // Reserve the right size for vertices and faces.
+    vertices.reserve(n_vertices);
 
     // Initialize working variables
-    double x, y, z;
-    double x_min, x_max, y_min, y_max, z_min, z_max;
+    float x, y, z;
+    float x_min, x_max, y_min, y_max, z_min, z_max;
 
     // 1st point :
-    fscanf(pFile, "%lf %lf %lf\n", &x, &y, &z); // Stockage de la premiere ligne
-    verticesTab.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur verticesTab
+    fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la premiere ligne
+    vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
 
     x_min = x;
     x_max = x;
@@ -1183,10 +865,10 @@ void Mesh::parseTriFile(const char file_name[])
     z_max = z;
 
     // Tous les autres points :
-    for (int i_vertex = 1; i_vertex < nb_vertex; i_vertex++)
+    for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
-        fscanf(pFile, "%lf %lf %lf\n", &x, &y, &z); // Stockage de la ligne lue
-        verticesTab.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur verticesTab
+        fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la ligne lue
+        vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
 
         if (x < x_min)
         {
@@ -1215,15 +897,15 @@ void Mesh::parseTriFile(const char file_name[])
     }
 
     // On remet Ã  jour la liste en centrant cette fois les coordonnees
-    double x_middle = (x_max + x_min) / 2;
-    double y_middle = (y_max + y_min) / 2;
-    double z_middle = (z_max + z_min) / 2;
+    float x_middle = (x_max + x_min) / 2;
+    float y_middle = (y_max + y_min) / 2;
+    float z_middle = (z_max + z_min) / 2;
 
     // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
-    for (int i_vertex = 0; i_vertex < nb_vertex; i_vertex++)
+    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
     {
-        Vertex vertex = verticesTab[i_vertex];
-        verticesTab[i_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
+        Vertex vertex = vertices[ix_vertex];
+        vertices[ix_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
     }
 
     fclose(pFile);
@@ -1241,60 +923,60 @@ void Mesh::triangulationFromVertices()
 
     // Tout d'abord, on crée le rectangle qui va contenir tous les points
 
-    double x_min = verticesTab[0].x();
-    double x_max = verticesTab[0].x();
-    double y_min = verticesTab[0].y();
-    double y_max = verticesTab[0].y();
+    float x_min = vertices[0].x();
+    float x_max = vertices[0].x();
+    float y_min = vertices[0].y();
+    float y_max = vertices[0].y();
 
-    for (int i_vertex = 1; i_vertex < nb_vertex; i_vertex++)
+    for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
-        if (verticesTab[i_vertex].x() < x_min)
+        if (vertices[ix_vertex].x() < x_min)
         {
-            x_min = verticesTab[i_vertex].x();
+            x_min = vertices[ix_vertex].x();
         };
-        if (verticesTab[i_vertex].x() > x_max)
+        if (vertices[ix_vertex].x() > x_max)
         {
-            x_max = verticesTab[i_vertex].x();
+            x_max = vertices[ix_vertex].x();
         };
-        if (verticesTab[i_vertex].y() < y_min)
+        if (vertices[ix_vertex].y() < y_min)
         {
-            y_min = verticesTab[i_vertex].y();
+            y_min = vertices[ix_vertex].y();
         };
-        if (verticesTab[i_vertex].y() > y_max)
+        if (vertices[ix_vertex].y() > y_max)
         {
-            y_max = verticesTab[i_vertex].y();
+            y_max = vertices[ix_vertex].y();
         };
     };
 
-    double x_min2 = x_min - (x_max - x_min) / 2;
-    double x_max2 = x_max + (x_max - x_min) / 2;
-    double y_min2 = y_min - (y_max - y_min) / 2;
-    double y_max2 = y_max + (y_max - y_min) / 2;
+    float x_min2 = x_min - (x_max - x_min) / 2;
+    float x_max2 = x_max + (x_max - x_min) / 2;
+    float y_min2 = y_min - (y_max - y_min) / 2;
+    float y_max2 = y_max + (y_max - y_min) / 2;
 
-    verticesTab.append(Vertex(x_min2, y_min2, 0)); // bas gauche
-    verticesTab.append(Vertex(x_min2, y_max2, 0)); // haut gauche
-    verticesTab.append(Vertex(x_max2, y_min2, 0)); // bas droit
-    verticesTab.append(Vertex(x_max2, y_max2, 0)); // haut droit
+    vertices.push_back(Vertex(x_min2, y_min2, 0)); // bas gauche
+    vertices.push_back(Vertex(x_min2, y_max2, 0)); // haut gauche
+    vertices.push_back(Vertex(x_max2, y_min2, 0)); // bas droit
+    vertices.push_back(Vertex(x_max2, y_max2, 0)); // haut droit
 
-    nb_vertex += 4;
+    n_vertices += 4;
 
-    Vertex &bg = verticesTab[nb_vertex - 4];
-    Vertex &hg = verticesTab[nb_vertex - 3];
-    Vertex &bd = verticesTab[nb_vertex - 2];
-    Vertex &hd = verticesTab[nb_vertex - 1];
+    Vertex &bg = vertices[n_vertices - 4];
+    Vertex &hg = vertices[n_vertices - 3];
+    Vertex &bd = vertices[n_vertices - 2];
+    Vertex &hd = vertices[n_vertices - 1];
 
-    facesTab.append(Face(nb_vertex - 4, nb_vertex - 2, nb_vertex - 3)); // Triangle bas gauche
-    facesTab.append(Face(nb_vertex - 1, nb_vertex - 3, nb_vertex - 2)); // Triangle haut droit
+    faces.push_back(Face(n_vertices - 4, n_vertices - 2, n_vertices - 3)); // Triangle bas gauche
+    faces.push_back(Face(n_vertices - 1, n_vertices - 3, n_vertices - 2)); // Triangle haut droit
 
-    nb_faces += 2;
+    n_faces += 2;
 
-    Face &triangle_bg = facesTab[nb_faces - 2];
-    Face &triangle_hd = facesTab[nb_faces - 1];
+    Face &triangle_bg = faces[n_faces - 2];
+    Face &triangle_hd = faces[n_faces - 1];
 
-    bg.i_incident_face = nb_faces - 2;
-    hg.i_incident_face = nb_faces - 2;
-    bd.i_incident_face = nb_faces - 1;
-    hd.i_incident_face = nb_faces - 1;
+    bg.ix_incident_face = n_faces - 2;
+    hg.ix_incident_face = n_faces - 2;
+    bd.ix_incident_face = n_faces - 1;
+    hd.ix_incident_face = n_faces - 1;
 
     // do not draw these points
     bg.is_a_to_draw_point = false;
@@ -1302,28 +984,28 @@ void Mesh::triangulationFromVertices()
     bd.is_a_to_draw_point = false;
     hd.is_a_to_draw_point = false;
 
-    triangle_bg.adjacent_faces[0] = nb_faces - 1;
+    triangle_bg.adjacent_faces[0] = n_faces - 1;
     triangle_bg.adjacent_faces[1] = -1;
     triangle_bg.adjacent_faces[2] = -1;
 
-    triangle_hd.adjacent_faces[0] = nb_faces - 2;
+    triangle_hd.adjacent_faces[0] = n_faces - 2;
     triangle_hd.adjacent_faces[1] = -1;
     triangle_hd.adjacent_faces[2] = -1;
 
-    for (int i_vertex = 0; i_vertex < (nb_vertex - 4); i_vertex++)
+    for (int ix_vertex = 0; ix_vertex < (n_vertices - 4); ix_vertex++)
     {
-        for (int i_face = 0; i_face < nb_faces; i_face++)
+        for (int ix_face = 0; ix_face < n_faces; ix_face++)
         {
-            if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) > 0)
+            if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) > 0)
             {
-                insertionTriangle(i_vertex, i_face);
-                lawsonAroundVertex(i_vertex);
+                insertionTriangle(ix_vertex, ix_face);
+                lawsonAroundVertex(ix_vertex);
                 break;
             }
-            else if (inTriangleTest(facesTab[i_face], verticesTab[i_vertex]) == 0)
+            else if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) == 0)
             {
-                insertionInArete(i_face, i_vertex); // pb ici probablement
-                lawsonAroundVertex(i_vertex);
+                insertionInEdge(ix_face, ix_vertex); // pb ici probablement
+                lawsonAroundVertex(ix_vertex);
                 break;
             };
         };
@@ -1335,15 +1017,15 @@ void Mesh::triangulationFromVertices()
  * Return the Voronoi point coordinates associated to a Delaunay Triangle
  *
 */
-QVector<double> Mesh::voronoiCenter(int i_face)
+std::vector<float> Mesh::voronoiCenter(int ix_face)
 {
-    QVector<double> coordinates;
+    std::vector<float> coordinates;
 
-    Face &triangle = facesTab[i_face];
+    Face &triangle = faces[ix_face];
 
-    Vertex &A = verticesTab[triangle.i_vertex[0]];
-    Vertex &B = verticesTab[triangle.i_vertex[1]];
-    Vertex &C = verticesTab[triangle.i_vertex[2]];
+    Vertex &A = vertices[triangle.ix_vertex[0]];
+    Vertex &B = vertices[triangle.ix_vertex[1]];
+    Vertex &C = vertices[triangle.ix_vertex[2]];
 
     std::cout << " orientation: " << orientationTest(A,B,C) << std::endl;
 
@@ -1356,21 +1038,21 @@ QVector<double> Mesh::voronoiCenter(int i_face)
     Vertex CA = A.operator-(C);
 
     // tangentes
-    double tan_A = AB.cross(AC).z()/(AB.operator*(AC));
-    double tan_B = BC.cross(BA).z()/(BC.operator*(BA));
-    double tan_C = CA.cross(CB).z()/(CA.operator*(CB));
+    float tan_A = AB.cross(AC).z()/(AB.operator*(AC));
+    float tan_B = BC.cross(BA).z()/(BC.operator*(BA));
+    float tan_C = CA.cross(CB).z()/(CA.operator*(CB));
 
     // barycentric coords
-    double alpha = tan_B+tan_C;
-    double beta = tan_A + tan_C;
-    double gamma = tan_B + tan_A;
-    double sum_abg = alpha + beta + gamma;
+    float alpha = tan_B+tan_C;
+    float beta = tan_A + tan_C;
+    float gamma = tan_B + tan_A;
+    float sum_abg = alpha + beta + gamma;
 
-    double x_voronoi = (alpha*A.x() + beta*B.x() + gamma*C.x())/sum_abg;
+    float x_voronoi = (alpha*A.x() + beta*B.x() + gamma*C.x())/sum_abg;
     coordinates.push_back(x_voronoi);
-    double y_voronoi = (alpha*A.y() + beta*B.y() + gamma*C.y())/sum_abg;
+    float y_voronoi = (alpha*A.y() + beta*B.y() + gamma*C.y())/sum_abg;
     coordinates.push_back(y_voronoi);
-    double z_voronoi = (alpha*A.z() + beta*B.z() + gamma*C.z())/sum_abg;
+    float z_voronoi = (alpha*A.z() + beta*B.z() + gamma*C.z())/sum_abg;
     coordinates.push_back(z_voronoi);
 
     return coordinates;
@@ -1381,43 +1063,43 @@ void Mesh::addVoronoiCentersToTriangulation(){
 
     int nb_voronoi_vertices = 0;
 
-    for (int i_face = 0; i_face < nb_faces; i_face++)
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
     // we calculate voronoi dual point for each faces that is not an infinite face
     {
-        if(verticesTab[facesTab[i_face].i_vertex[0]].is_a_to_draw_point
-                && verticesTab[facesTab[i_face].i_vertex[1]].is_a_to_draw_point
-                && verticesTab[facesTab[i_face].i_vertex[2]].is_a_to_draw_point){
+        if(vertices[faces[ix_face].ix_vertex[0]].is_a_to_draw_point
+                && vertices[faces[ix_face].ix_vertex[1]].is_a_to_draw_point
+                && vertices[faces[ix_face].ix_vertex[2]].is_a_to_draw_point){
 
-            QVector<double> voronoiCoordinates = voronoiCenter(i_face);
-            std::cout << "nb points: " << nb_faces << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
-            std::cout << "nb points: " << nb_vertex << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
-            std::cout << "nb points: " << nb_vertex << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
+            std::vector<float> voronoiCoordinates = voronoiCenter(ix_face);
+            std::cout << "nb points: " << n_faces << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
+            std::cout << "nb points: " << n_vertices << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
+            std::cout << "nb points: " << n_vertices << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
 
-            verticesTab.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
-            nb_vertex+=1;
+            vertices.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
+            n_vertices+=1;
             nb_voronoi_vertices+=1;
 
             // define this point as a voronoi point
-            verticesTab[nb_vertex-1].is_a_voronoi_center = true;
+            vertices[n_vertices-1].is_a_voronoi_center = true;
         }
     }
 
     // now we insert precedent points into the mesh structure
-    for (int i_voronoi_vertex = 0; i_voronoi_vertex<nb_voronoi_vertices; i_voronoi_vertex++){
+    for (int i_voronoix_vertex = 0; i_voronoix_vertex<nb_voronoi_vertices; i_voronoix_vertex++){
 
 
-        for (int i_face = 0; i_face < nb_faces; i_face++){
+        for (int ix_face = 0; ix_face < n_faces; ix_face++){
 
-            if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-nb_voronoi_vertices+i_voronoi_vertex]) > 0)
+            if (inTriangleTest(faces[ix_face], vertices[n_vertices-nb_voronoi_vertices+i_voronoix_vertex]) > 0)
             {
-                insertionTriangle(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex, i_face);
-                lawsonAroundVertex(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex);
+                insertionTriangle(n_vertices-nb_voronoi_vertices+i_voronoix_vertex, ix_face);
+                lawsonAroundVertex(n_vertices-nb_voronoi_vertices+i_voronoix_vertex);
                 break;
             }
-            else if (inTriangleTest(facesTab[i_face], verticesTab[nb_vertex-nb_voronoi_vertices+i_voronoi_vertex]) == 0)
+            else if (inTriangleTest(faces[ix_face], vertices[n_vertices-nb_voronoi_vertices+i_voronoix_vertex]) == 0)
             {
-                insertionInArete(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex, i_face); // pb ici probablement
-                lawsonAroundVertex(nb_vertex-nb_voronoi_vertices+i_voronoi_vertex);
+                insertionInEdge(n_vertices-nb_voronoi_vertices+i_voronoix_vertex, ix_face); // pb ici probablement
+                lawsonAroundVertex(n_vertices-nb_voronoi_vertices+i_voronoix_vertex);
                 break;
             };
         };
