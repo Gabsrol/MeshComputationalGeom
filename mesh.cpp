@@ -54,17 +54,12 @@ Mesh::Mesh(){}
 
 void Mesh::parseFile(const char file_name[])
 {
-    // reading file
 
     FILE *pFile;
     pFile = fopen(file_name, "r");
 
-    // print success or failure
-
     if (pFile != NULL){std::cout << "opening " << file_name << " succeeded" << std::endl;}
     else{std::cout << "opening " << file_name << " failed" << std::endl;}
-
-    // Initialize vertices and number of edges
 
     vertices.clear();
     int n_edges = 0;
@@ -73,93 +68,38 @@ void Mesh::parseFile(const char file_name[])
     fscanf(pFile, "%d %d %d\n", &n_vertices, &n_faces, &n_edges);
     std::cout << "nb points: " << n_vertices << ", nb faces: " << n_faces << std::endl;
 
-    // Reserve the right size for vertices and faces.
+
     vertices.reserve(n_vertices);
     faces.reserve(n_faces);
 
-    // Initialize working variables
     float x, y, z;
-//    float x_min, x_max, y_min, y_max, z_min, z_max;
 
-    // 1st point :
-    fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la premiere ligne
-    vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
-
-//    x_min = x;
-//    x_max = x;
-//    y_min = y;
-//    y_max = y;
-//    z_min = z;
-//    z_max = z;
-
+    fscanf(pFile, "%f %f %f\n", &x, &y, &z);
+    vertices.push_back(Vertex(x, y, z));
     // Tous les autres points :
     for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
-        fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la ligne lue
-        vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
+        fscanf(pFile, "%f %f %f\n", &x, &y, &z);
+        vertices.push_back(Vertex(x, y, z));
 
+        int n_face, ix_vertex_1, ix_vertex_2, ix_vertex_3;
+        for (int ix_face = 0; ix_face < n_faces; ix_face++)
+        {
+            fscanf(pFile, "%d %d %d %d\n", &n_face, &ix_vertex_1, &ix_vertex_2, &ix_vertex_3);
+            faces.push_back(Face(ix_vertex_1, ix_vertex_2, ix_vertex_3));
+        }
 
-
-//        if (x < x_min)
-//        {
-//            x_min = x;
-//        };
-//        if (x > x_max)
-//        {
-//            x_max = x;
-//        };
-//        if (y < y_min)
-//        {
-//            y_min = y;
-//        };
-//        if (y > y_max)
-//        {
-//            y_max = y;
-//        };
-//        if (z < z_min)
-//        {
-//            z_min = z;
-//        };
-//        if (z > z_max)
-//        {
-//            z_max = z;
-//        };
+        fclose(pFile);
+        std::cout << "end of reading" << std::endl;
     }
-
-    // On remet Ã  jour la liste en centrant cette fois les coordonnees
-//    float x_middle = (x_max + x_min) / 2;
-//    float y_middle = (y_max + y_min) / 2;
-//    float z_middle = (z_max + z_min) / 2;
-
-    // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
-//    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
-//    {
-//        Vertex vertex = vertices[ix_vertex];
-//        vertices[ix_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
-//    }
-
-    // Stocke toutes les faces dans faces
-    int n_face, ix_vertex_1, ix_vertex_2, ix_vertex_3;
-    for (int ix_face = 0; ix_face < n_faces; ix_face++)
-    {
-        fscanf(pFile, "%d %d %d %d\n", &n_face, &ix_vertex_1, &ix_vertex_2, &ix_vertex_3);
-        faces.push_back(Face(ix_vertex_1, ix_vertex_2, ix_vertex_3));
-    }
-
-    // Logs the ending of the process
-    fclose(pFile);
-    std::cout << "end of reading" << std::endl;
 }
 
-/**
- * Connects the index of one adjacent face for every vertices of the mesh.
- * Connects the 3 adjacent faces for every faces of the mesh.
- */
+// To sew the mesh
+
 void Mesh::sew()
 {
     std::cout << "sewing" << std::endl;
 
-    // to know if a vertex has already been sewed
     bool is_sewed[n_vertices];
     for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
     {
@@ -217,6 +157,7 @@ void Mesh::sew()
     std::cout << "end sewing" << std::endl;
 }
 
+// to add vertex in a mesh
 void Mesh::add_vertex(Vertex v){
     vertices.push_back(v);
     n_vertices+=1;
@@ -239,29 +180,29 @@ void Mesh::add_vertex(Vertex v){
     };
 }
 
-//is on the circumscribed circle ?
+//is vertex P on the circumscribed circle ?
 // = 0 on edge
 // > 0 yes
 // < 0 no
-float Mesh::vertexInCircumscribingCircle(Face face, Vertex P)
+float Mesh::vertexInCircumscribingCircle(Face face, Vertex V)
 {
 
-    Vertex A = vertices[face.ix_vertex[0]];
-    Vertex B = vertices[face.ix_vertex[1]];
-    Vertex C = vertices[face.ix_vertex[2]];
+    Vertex v1 = vertices[face.ix_vertex[0]];
+    Vertex v2 = vertices[face.ix_vertex[1]];
+    Vertex v3 = vertices[face.ix_vertex[2]];
 
-    Vertex A_hyper = Vertex(A.x(), A.y(), A.x() * A.x() + A.y() * A.y());
-    Vertex B_hyper = Vertex(B.x(), B.y(), B.x() * B.x() + B.y() * B.y());
-    Vertex C_hyper = Vertex(C.x(), C.y(), C.x() * C.x() + C.y() * C.y());
+    Vertex v1_sqrd = Vertex(v1.x(), v1.y(), v1.x() * v1.x() + v1.y() * v1.y());
+    Vertex v2_sqrd = Vertex(v2.x(), v2.y(), v2.x() * v2.x() + v2.y() * v2.y());
+    Vertex v3_sqrd = Vertex(v3.x(), v3.y(), v3.x() * v3.x() + v3.y() * v3.y());
 
-    Vertex P_hyper = Vertex(P.x(), P.y(), P.x() * P.x() + P.y() * P.y());
+    Vertex V_sqrd = Vertex(V.x(), V.y(), V.x() * V.x() + V.y() * V.y());
 
-    Vertex AB_hyper = B_hyper - A_hyper;
-    Vertex AC_hyper = C_hyper - A_hyper;
-    Vertex AP_hyper = P_hyper - A_hyper;
+    Vertex v12_sqrd = v2_sqrd - v1_sqrd;
+    Vertex v13_sqrd = v3_sqrd - v1_sqrd;
+    Vertex v1V_sqrd = V_sqrd - v1_sqrd;
 
-    Vertex crossprod = AB_hyper.cross(AC_hyper);
-    float res = -(crossprod * AP_hyper);
+    Vertex crossprod = v12_sqrd.cross(v13_sqrd);
+    float res = -(crossprod * v1V_sqrd);
 
     return res;
 }
@@ -271,6 +212,7 @@ bool Mesh::isDelaunay(int ix_face_1, int ix_opposit_vertex_1)
 
     Face face_1 = faces[ix_face_1];
     Face face_2;
+
     if (face_1.ix_vertex[0] == ix_opposit_vertex_1)
     {
         face_2 = faces[face_1.adjacent_faces[0]];
@@ -283,7 +225,9 @@ bool Mesh::isDelaunay(int ix_face_1, int ix_opposit_vertex_1)
     {
         face_2 = faces[face_1.adjacent_faces[2]];
     };
+
     int ix_opposit_vertex_2;
+
     if (face_2.adjacent_faces[0] == ix_face_1)
     {
         ix_opposit_vertex_2 = face_2.ix_vertex[0];
@@ -307,78 +251,87 @@ bool Mesh::isDelaunay(int ix_face_1, int ix_opposit_vertex_1)
 QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_vertex_1)
 {
     Face &face_1 = faces[ix_face_1];
+    int ix_vertex_1 = ix_initial_opposit_vertex_1;
+
     int ix_face_2 = -1;
     int ix_face_3 = -1;
     int ix_face_4 = -1;
     int ix_face_5 = -1;
     int ix_face_6 = -1;
 
-    int ix_vertex_a = ix_initial_opposit_vertex_1;
-    int ix_vertex_b = -1;
-    int ix_vertex_c = -1;
-    int ix_vertex_d = -1;
+    int ix_vertex_2 = -1;
+    int ix_vertex_3 = -1;
+    int ix_vertex_4 = -1;
 
     if (ix_initial_opposit_vertex_1 == face_1.ix_vertex[0])
     {
         ix_face_2 = face_1.adjacent_faces[0];
-        ix_vertex_d = face_1.ix_vertex[1];
-        ix_vertex_b = face_1.ix_vertex[2];
         ix_face_4 = face_1.adjacent_faces[1];
         ix_face_3 = face_1.adjacent_faces[2];
+
+        ix_vertex_4 = face_1.ix_vertex[1];
+        ix_vertex_2 = face_1.ix_vertex[2];
+
     }
     else if (ix_initial_opposit_vertex_1 == face_1.ix_vertex[1])
     {
         ix_face_2 = face_1.adjacent_faces[1];
-        ix_vertex_d = face_1.ix_vertex[2];
-        ix_vertex_b = face_1.ix_vertex[0];
-        ix_face_4 = face_1.adjacent_faces[2];
         ix_face_3 = face_1.adjacent_faces[0];
+        ix_face_4 = face_1.adjacent_faces[2];
+
+        ix_vertex_4 = face_1.ix_vertex[2];
+        ix_vertex_2 = face_1.ix_vertex[0];
     }
     else
     {
         ix_face_2 = face_1.adjacent_faces[2];
-        ix_vertex_d = face_1.ix_vertex[0];
-        ix_vertex_b = face_1.ix_vertex[1];
-        ix_face_4 = face_1.adjacent_faces[0];
         ix_face_3 = face_1.adjacent_faces[1];
+        ix_face_4 = face_1.adjacent_faces[0];
+
+
+        ix_vertex_4 = face_1.ix_vertex[0];
+        ix_vertex_2 = face_1.ix_vertex[1];
     };
+
     Face &face_2 = faces[ix_face_2];
 
     if (ix_face_1 == face_2.adjacent_faces[0])
     {
-
-        ix_vertex_c = face_2.ix_vertex[0];
-        ix_face_6 = face_2.adjacent_faces[1];
         ix_face_5 = face_2.adjacent_faces[2];
+        ix_face_6 = face_2.adjacent_faces[1];
+
+        ix_vertex_3 = face_2.ix_vertex[0];
+
     }
     else if (ix_face_1 == face_2.adjacent_faces[1])
     {
-
-        ix_vertex_c = face_2.ix_vertex[1];
-        ix_face_6 = face_2.adjacent_faces[2];
         ix_face_5 = face_2.adjacent_faces[0];
+        ix_face_6 = face_2.adjacent_faces[2];
+
+        ix_vertex_3 = face_2.ix_vertex[1];
     }
     else
     {
-
-        ix_vertex_c = face_2.ix_vertex[2];
-        ix_face_6 = face_2.adjacent_faces[0];
         ix_face_5 = face_2.adjacent_faces[1];
+        ix_face_6 = face_2.adjacent_faces[0];
+
+        ix_vertex_3 = face_2.ix_vertex[2];
+
     };
 
     // update of sewing after flipping the edge
 
-    face_1.ix_vertex[0] = ix_vertex_a;
-    face_1.ix_vertex[1] = ix_vertex_d;
-    face_1.ix_vertex[2] = ix_vertex_c;
+    face_1.ix_vertex[0] = ix_vertex_1;
+    face_1.ix_vertex[1] = ix_vertex_4;
+    face_1.ix_vertex[2] = ix_vertex_3;
 
     face_1.adjacent_faces[0] = ix_face_6;
     face_1.adjacent_faces[1] = ix_face_2;
     face_1.adjacent_faces[2] = ix_face_3;
 
-    face_2.ix_vertex[0] = ix_vertex_c;
-    face_2.ix_vertex[1] = ix_vertex_b;
-    face_2.ix_vertex[2] = ix_vertex_a;
+    face_2.ix_vertex[0] = ix_vertex_3;
+    face_2.ix_vertex[1] = ix_vertex_2;
+    face_2.ix_vertex[2] = ix_vertex_1;
 
     face_2.adjacent_faces[0] = ix_face_4;
     face_2.adjacent_faces[1] = ix_face_1;
@@ -398,27 +351,29 @@ QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_
 
     // Vertices
 
-    vertices[ix_vertex_a].ix_incident_face = ix_face_1;
-    vertices[ix_vertex_d].ix_incident_face = ix_face_1;
-    vertices[ix_vertex_c].ix_incident_face = ix_face_2;
-    vertices[ix_vertex_b].ix_incident_face = ix_face_2;
+    vertices[ix_vertex_1].ix_incident_face = ix_face_1;
+    vertices[ix_vertex_4].ix_incident_face = ix_face_1;
+    vertices[ix_vertex_3].ix_incident_face = ix_face_2;
+    vertices[ix_vertex_2].ix_incident_face = ix_face_2;
 
     QList<std::pair<int, int>> quad_edges;
-    quad_edges.push_back({ix_face_1, ix_vertex_a});
-    quad_edges.push_back({ix_face_2, ix_vertex_a});
+    quad_edges.push_back({ix_face_1, ix_vertex_1});
+    quad_edges.push_back({ix_face_2, ix_vertex_1});
 
     return quad_edges;
 }
 
-float Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
+// test if 3 points are oriented positively
+float Mesh::orientationTest(Vertex v1, Vertex v2, Vertex v3)
 {
 
-    Vertex AB = B - A;
-    Vertex BC = C - B;
-    Vertex AB_proj = Vertex(AB.x(), AB.y(), 0);
-    Vertex BC_proj = Vertex(BC.x(), BC.y(), 0);
+    Vertex v21 = v2 - v1;
+    Vertex v32 = v3 - v2;
 
-    Vertex crossprod = AB_proj.cross(BC_proj);
+    Vertex p1 = Vertex(v21.x(), v21.y(), 0);
+    Vertex p2 = Vertex(v32.x(), v32.y(), 0);
+
+    Vertex crossprod = p1.cross(p2);
 
     return crossprod.z();
 }
@@ -429,14 +384,14 @@ float Mesh::orientationTest(Vertex A, Vertex B, Vertex C)
 // 3 : outside the edge
 float Mesh::inTriangleTest(Face face, Vertex vertex)
 {
-    // On travaille dans le plan z = 0
-    Vertex A = vertices[face.ix_vertex[0]];
-    Vertex B = vertices[face.ix_vertex[1]];
-    Vertex C = vertices[face.ix_vertex[2]];
 
-    float test1 = orientationTest(A, B, vertex);
-    float test2 = orientationTest(B, C, vertex);
-    float test3 = orientationTest(C, A, vertex);
+    Vertex v1 = vertices[face.ix_vertex[0]];
+    Vertex v2 = vertices[face.ix_vertex[1]];
+    Vertex v3 = vertices[face.ix_vertex[2]];
+
+    float test1 = orientationTest(v1, v2, vertex);
+    float test2 = orientationTest(v2, v3, vertex);
+    float test3 = orientationTest(v3, v1, vertex);
 
     if ((test1 > 0) && (test2 > 0) && (test3 > 0))
     {
@@ -530,12 +485,7 @@ void Mesh::insertionTriangle(int i_P, int ix_face)
     P.ix_incident_face = i_ABP;
 }
 
-/**
- * Inserts a vertex on an edge
- *
- * @param ix_face_1 index of the face containing the edge.
- * @param i_P index of the vertex to be inserted.
- */
+
 void Mesh::insertionInEdge(int ix_face_1, int i_P)
 {
     Face face_1 = faces[ix_face_1];
@@ -745,7 +695,7 @@ void Mesh::lawsonAroundVertex(int i_P)
 
 
 // ----------------------------------------------
-// --------Crust Algorithm-------- MON CODE COMMENCE A PARTIR DE LA
+// --------Crust Algorithm--------
 // ----------------------------------------------
 
 
@@ -757,11 +707,9 @@ void Mesh::lawsonAroundVertex(int i_P)
 */
 void Mesh::parseTriFile(const char file_name[])
 {
-    // Lecture du fichier, et stockage dans vertices
     FILE *pFile;
     pFile = fopen(file_name, "r");
 
-    // Logs the success of the opening operation
     if (pFile != NULL)
     {
         std::cout << "file " << file_name << " opened" << std::endl;
@@ -771,81 +719,28 @@ void Mesh::parseTriFile(const char file_name[])
         std::cout << "file " << file_name << " not opened" << std::endl;
     }
 
-    // Initialize vertices and n_edgess
     vertices.clear();
     faces.clear();
 
-    // Read the first line, that gives the number of vertices,
-    // the number of faces and the number of edges
     fscanf(pFile, "%d\n", &n_vertices);
-    // Logs the result
     std::cout << "nb points: " << n_vertices << std::endl;
-    n_faces = 0;
 
-    // Reserve the right size for vertices and faces.
+    n_faces = 0;
     vertices.reserve(n_vertices);
 
-    // Initialize working variables
     float x, y, z;
-    float x_min, x_max, y_min, y_max, z_min, z_max;
 
-    // 1st point :
-    fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la premiere ligne
-    vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
+    fscanf(pFile, "%f %f %f\n", &x, &y, &z);
+    vertices.push_back(Vertex(x, y, z));
 
-    x_min = x;
-    x_max = x;
-    y_min = y;
-    y_max = y;
-    z_min = z;
-    z_max = z;
-
-    // Tous les autres points :
     for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
-        fscanf(pFile, "%f %f %f\n", &x, &y, &z); // Stockage de la ligne lue
-        vertices.push_back(Vertex(x, y, z));     // Ajout du point dans le vecteur vertices
-
-        if (x < x_min)
-        {
-            x_min = x;
-        };
-        if (x > x_max)
-        {
-            x_max = x;
-        };
-        if (y < y_min)
-        {
-            y_min = y;
-        };
-        if (y > y_max)
-        {
-            y_max = y;
-        };
-        if (z < z_min)
-        {
-            z_min = z;
-        };
-        if (z > z_max)
-        {
-            z_max = z;
-        };
+        fscanf(pFile, "%f %f %f\n", &x, &y, &z);
+        vertices.push_back(Vertex(x, y, z));
     }
-
-    // On remet Ã  jour la liste en centrant cette fois les coordonnees
-    float x_middle = (x_max + x_min) / 2;
-    float y_middle = (y_max + y_min) / 2;
-    float z_middle = (z_max + z_min) / 2;
-
-    // Mise Ã  jour de tous les vertex en les remplaÃ§ant par leur Ã©quivalent centrÃ© en 0,0,0.
-    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
-    {
-        Vertex vertex = vertices[ix_vertex];
-        vertices[ix_vertex] = Vertex(vertex.x() - x_middle, vertex.y() - y_middle, vertex.z() - z_middle);
-    }
-
     fclose(pFile);
     std::cout << "end of reading" << std::endl;
+
 }
 
 /*
@@ -884,49 +779,50 @@ void Mesh::triangulationFromVertices()
         };
     };
 
-    float x_min2 = x_min - (x_max - x_min) / 2;
-    float x_max2 = x_max + (x_max - x_min) / 2;
-    float y_min2 = y_min - (y_max - y_min) / 2;
-    float y_max2 = y_max + (y_max - y_min) / 2;
+    // add the square containing all the other vertices
+    float x1 = x_min - 10;
+    float x2 = x_max + 10;
+    float y1 = y_min - 10;
+    float y2 = y_max + 10;
 
-    vertices.push_back(Vertex(x_min2, y_min2, 0)); // bas gauche
-    vertices.push_back(Vertex(x_min2, y_max2, 0)); // haut gauche
-    vertices.push_back(Vertex(x_max2, y_min2, 0)); // bas droit
-    vertices.push_back(Vertex(x_max2, y_max2, 0)); // haut droit
+    vertices.push_back(Vertex(x1, y1, 0));
+    vertices.push_back(Vertex(x1, y2, 0));
+    vertices.push_back(Vertex(x2, y1, 0));
+    vertices.push_back(Vertex(x2, y2, 0));
 
     n_vertices += 4;
 
-    Vertex &bg = vertices[n_vertices - 4];
-    Vertex &hg = vertices[n_vertices - 3];
-    Vertex &bd = vertices[n_vertices - 2];
-    Vertex &hd = vertices[n_vertices - 1];
+    Vertex &inf_vrtx_1 = vertices[n_vertices - 4];
+    Vertex &inf_vrtx_2 = vertices[n_vertices - 3];
+    Vertex &inf_vrtx_3 = vertices[n_vertices - 2];
+    Vertex &inf_vrtx_4 = vertices[n_vertices - 1];
 
-    faces.push_back(Face(n_vertices - 4, n_vertices - 2, n_vertices - 3)); // Triangle bas gauche
-    faces.push_back(Face(n_vertices - 1, n_vertices - 3, n_vertices - 2)); // Triangle haut droit
+    faces.push_back(Face(n_vertices - 4, n_vertices - 2, n_vertices - 3));
+    faces.push_back(Face(n_vertices - 1, n_vertices - 3, n_vertices - 2));
 
     n_faces += 2;
 
-    Face &triangle_bg = faces[n_faces - 2];
-    Face &triangle_hd = faces[n_faces - 1];
+    Face &triangle_inf_vrtx_1 = faces[n_faces - 2];
+    Face &triangle_inf_vrtx_4 = faces[n_faces - 1];
 
-    bg.ix_incident_face = n_faces - 2;
-    hg.ix_incident_face = n_faces - 2;
-    bd.ix_incident_face = n_faces - 1;
-    hd.ix_incident_face = n_faces - 1;
+    inf_vrtx_1.ix_incident_face = n_faces - 2;
+    inf_vrtx_2.ix_incident_face = n_faces - 2;
+    inf_vrtx_3.ix_incident_face = n_faces - 1;
+    inf_vrtx_4.ix_incident_face = n_faces - 1;
 
     // do not draw these points
-    bg.is_a_to_draw_point = false;
-    hg.is_a_to_draw_point = false;
-    bd.is_a_to_draw_point = false;
-    hd.is_a_to_draw_point = false;
+    inf_vrtx_1.is_a_to_draw_point = false;
+    inf_vrtx_2.is_a_to_draw_point = false;
+    inf_vrtx_3.is_a_to_draw_point = false;
+    inf_vrtx_4.is_a_to_draw_point = false;
 
-    triangle_bg.adjacent_faces[0] = n_faces - 1;
-    triangle_bg.adjacent_faces[1] = -1;
-    triangle_bg.adjacent_faces[2] = -1;
+    triangle_inf_vrtx_1.adjacent_faces[0] = n_faces - 1;
+    triangle_inf_vrtx_1.adjacent_faces[1] = -1;
+    triangle_inf_vrtx_1.adjacent_faces[2] = -1;
 
-    triangle_hd.adjacent_faces[0] = n_faces - 2;
-    triangle_hd.adjacent_faces[1] = -1;
-    triangle_hd.adjacent_faces[2] = -1;
+    triangle_inf_vrtx_4.adjacent_faces[0] = n_faces - 2;
+    triangle_inf_vrtx_4.adjacent_faces[1] = -1;
+    triangle_inf_vrtx_4.adjacent_faces[2] = -1;
 
     for (int ix_vertex = 0; ix_vertex < (n_vertices - 4); ix_vertex++)
     {
@@ -982,13 +878,13 @@ std::vector<float> Mesh::voronoiCenter(int ix_face)
     float alpha = tan_B+tan_C;
     float beta = tan_A + tan_C;
     float gamma = tan_B + tan_A;
-    float sum_abg = alpha + beta + gamma;
+    float sum_ainf_vrtx_1 = alpha + beta + gamma;
 
-    float x_voronoi = (alpha*A.x() + beta*B.x() + gamma*C.x())/sum_abg;
+    float x_voronoi = (alpha*A.x() + beta*B.x() + gamma*C.x())/sum_ainf_vrtx_1;
     coordinates.push_back(x_voronoi);
-    float y_voronoi = (alpha*A.y() + beta*B.y() + gamma*C.y())/sum_abg;
+    float y_voronoi = (alpha*A.y() + beta*B.y() + gamma*C.y())/sum_ainf_vrtx_1;
     coordinates.push_back(y_voronoi);
-    float z_voronoi = (alpha*A.z() + beta*B.z() + gamma*C.z())/sum_abg;
+    float z_voronoi = (alpha*A.z() + beta*B.z() + gamma*C.z())/sum_ainf_vrtx_1;
     coordinates.push_back(z_voronoi);
 
     return coordinates;
