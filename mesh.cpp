@@ -22,11 +22,6 @@ float Vertex::z() const{return _z;}
 
 // Operators
 
-bool Vertex::operator!=(const Vertex other_vertex) const
-{
-    return ((x() != other_vertex.x()) | (y() != other_vertex.y()) | (z() != other_vertex.z()));
-}
-
 Vertex Vertex::cross(const Vertex &other_vertex) const
 {
     float result_x = _y * other_vertex.z() - _z * other_vertex.y();

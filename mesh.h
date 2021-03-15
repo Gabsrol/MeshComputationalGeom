@@ -35,13 +35,8 @@ public:
 
     // some useful methods or operators
 
-    float getNorm() const { return std::sqrt(_x * _x + _y * _y + _z * _z); } // The L2 norm of the vertex, seen as a vector.
     float operator*(const Vertex &p) const { return _x * p._x + _y * p._y + _z * p._z; }       // Scalar product with another vector
-    Vertex operator*(float a) const { return Vertex(_x * a, _y * a, _z * a); }                 // Product with a scalar
-    Vertex operator/(float a) const { return Vertex(_x / a, _y / a, _z / a); }                 // Division with a scalar !=0
-    Vertex operator+(const Vertex &p) const { return Vertex(_x + p._x, _y + p._y, _z + p._z); } // Addition with another vectors
     Vertex operator-(const Vertex &p) const { return Vertex(_x - p._x, _y - p._y, _z - p._z); } // Substraction with another vectors
-    bool operator!=(const Vertex other_vertex) const;
     Vertex cross(const Vertex &p) const; // Cross product
 };
 
