@@ -18,7 +18,7 @@ GLDisplayWidget::GLDisplayWidget(QWidget *parent) : QGLWidget(parent)
     // Initial position of camera
     _X = 0;
     _Y = 0;
-    _Z = 0;
+    _Z = 10;
     _angle = 0;
 
     // To display vertices, edges or faces
@@ -57,16 +57,16 @@ void GLDisplayWidget::initializeGL()
     // option 1 : 3D structures like queen.off :
     // ---------------------------------------------------------
 
-    _mesh.parseFile(path_off_file);
-    _mesh.sew();
+    //_mesh.parseFile(path_off_file);
+    //_mesh.sew();
 
 
     // ---------------------------------------------------------
     // option 2 : triangulation (if your file contains only vertices coordinates)
     // ---------------------------------------------------------
 
-    //_mesh.parseTriFile(path_off_file);
-    //_mesh.triangulationFromVertices();
+    _mesh.parseTriFile(path_off_file);
+    _mesh.triangulationFromVertices();
 
 }
 

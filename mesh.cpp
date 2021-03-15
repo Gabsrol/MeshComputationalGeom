@@ -751,10 +751,6 @@ void Mesh::parseTriFile(const char file_name[])
  */
 void Mesh::triangulationFromVertices()
 {
-    // On ne prend pas en compte la dimension z
-    // On part d'un maillage sans triangle, seulement des points
-
-    // Tout d'abord, on crée le rectangle qui va contenir tous les points
 
     float x_min = vertices[0].x();
     float x_max = vertices[0].x();
