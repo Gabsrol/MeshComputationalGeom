@@ -82,16 +82,18 @@ void Mesh::parseFile(const char file_name[])
         fscanf(pFile, "%f %f %f\n", &x, &y, &z);
         vertices.push_back(Vertex(x, y, z));
 
-        int n_face, ix_vertex_1, ix_vertex_2, ix_vertex_3;
-        for (int ix_face = 0; ix_face < n_faces; ix_face++)
-        {
+    }
+    int n_face, ix_vertex_1, ix_vertex_2, ix_vertex_3;
+    for (int ix_face = 0; ix_face < n_faces; ix_face++)
+    {
             fscanf(pFile, "%d %d %d %d\n", &n_face, &ix_vertex_1, &ix_vertex_2, &ix_vertex_3);
             faces.push_back(Face(ix_vertex_1, ix_vertex_2, ix_vertex_3));
-        }
-
-        fclose(pFile);
-        std::cout << "end of reading" << std::endl;
     }
+
+
+    fclose(pFile);
+    std::cout << "end of reading" << std::endl;
+
 }
 
 // To sew the mesh
@@ -111,11 +113,11 @@ void Mesh::sew()
     for (int ix_face = 0; ix_face < n_faces; ix_face++) // for each face
     {
 
-        Face face = faces[ix_face];
+        //Face &face = faces[ix_face];
 
         for (int ix_vertex_of_face = 0; ix_vertex_of_face < 3; ix_vertex_of_face++)
         {
-            int ix_vertex = face.ix_vertex[ix_vertex_of_face];
+            int ix_vertex = faces[ix_face].ix_vertex[ix_vertex_of_face];
             if (!is_sewed[ix_vertex])
             {
                 vertices[ix_vertex].ix_incident_face = ix_face;
@@ -125,23 +127,23 @@ void Mesh::sew()
 
         // setting adjacent faces on each edge
         std::pair<int, int> edge;
-        std::pair<int, int> pair_face_vertex; //
+        std::pair<int, int> pair_face_vertex;
 
         // Order vertex
         for (int ix_vertex_of_face = 0; ix_vertex_of_face < 3; ix_vertex_of_face++)
         {
-            if (face.ix_vertex[(ix_vertex_of_face + 1) % 3] < face.ix_vertex[(ix_vertex_of_face + 2) % 3])
+            if (faces[ix_face].ix_vertex[(ix_vertex_of_face + 1) % 3] < faces[ix_face].ix_vertex[(ix_vertex_of_face + 2) % 3])
             {
-                edge = {face.ix_vertex[(ix_vertex_of_face + 1) % 3], face.ix_vertex[(ix_vertex_of_face + 2) % 3]};
+                edge = {faces[ix_face].ix_vertex[(ix_vertex_of_face + 1) % 3], faces[ix_face].ix_vertex[(ix_vertex_of_face + 2) % 3]};
             }
             else
             {
-                edge = {face.ix_vertex[(ix_vertex_of_face + 2) % 3], face.ix_vertex[(ix_vertex_of_face + 1) % 3]};
+                edge = {faces[ix_face].ix_vertex[(ix_vertex_of_face + 2) % 3], faces[ix_face].ix_vertex[(ix_vertex_of_face + 1) % 3]};
             }
 
             if (pair_map.find(edge) == pair_map.end()) // if pair does not exist yet
             {
-                pair_map[edge] = {ix_face, ix_vertex_of_face}; // (ix_vertex_1, ix_vertex_2) : (ix_face, ix_vertex) (c'est le vertex opposÃ©)
+                pair_map[edge] = {ix_face, ix_vertex_of_face}; // (ix_vertex_1, ix_vertex_2) : (ix_face, ix_vertex)
             }
             else
             {
@@ -149,7 +151,7 @@ void Mesh::sew()
                 int i_other_face = pair_face_vertex.first;
                 int i_other_vertex = pair_face_vertex.second;
 
-                face.adjacent_faces[ix_vertex_of_face] = i_other_face;
+                faces[ix_face].adjacent_faces[ix_vertex_of_face] = i_other_face;
                 faces[i_other_face].adjacent_faces[i_other_vertex] = ix_face;
             }
         }
