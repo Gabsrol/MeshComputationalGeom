@@ -18,13 +18,14 @@ GLDisplayWidget::GLDisplayWidget(QWidget *parent) : QGLWidget(parent)
     // Initial position of camera
     _X = 0;
     _Y = 0;
-    _Z = 10;
+    _Z = 0;
     _angle = 0;
 
     // To display vertices, edges or faces
     displayVertices = false;
     displayEdges = false;
     displayFaces = false;
+    displayCrust = false;
 
     // Update the scene
     connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
@@ -46,7 +47,7 @@ void GLDisplayWidget::initializeGL()
 
     //char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
     char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
-    char off_file[32] = "lapin.off";
+    char off_file[32] = "queen.off";
     char * path_off_file;
     path_off_file = strcat(path_folder, off_file);
 
@@ -57,16 +58,16 @@ void GLDisplayWidget::initializeGL()
     // option 1 : 3D structures like queen.off :
     // ---------------------------------------------------------
 
-    //_mesh.parseFile(path_off_file);
-    //_mesh.sew();
+    _mesh.parseFile(path_off_file);
+    _mesh.sew();
 
 
     // ---------------------------------------------------------
     // option 2 : triangulation (if your file contains only vertices coordinates)
     // ---------------------------------------------------------
 
-    _mesh.parseTriFile(path_off_file);
-    _mesh.triangulationFromVertices();
+    //_mesh.parseTriFile(path_off_file);
+    //_mesh.triangulationFromVertices();
 
 }
 
@@ -188,10 +189,13 @@ void GLDisplayWidget::drawFaces()
 
 
 void GLDisplayWidget::add_random_vertex(){
-    float LO = -3;
-    float HI = 3;
-    float rand_x = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
-    float rand_y = LO + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+    float x0 = _mesh.x_min - (_mesh.x_max-_mesh.x_min);
+    float x1 = _mesh.x_max + (_mesh.x_max-_mesh.x_min);
+    float y0 = _mesh.y_min - (_mesh.y_max-_mesh.y_min);
+    float y1 = _mesh.y_max + (_mesh.y_max-_mesh.y_min);
+
+    float rand_x = x0 + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(x1-x0)));
+    float rand_y = y0 + static_cast <float> (std::rand()) /( static_cast <float> (RAND_MAX/(y1-y0)));
     std::cout << "add random vertex : " << std::endl;
     std::cout << rand_x << std::endl;
     std::cout << rand_y << std::endl;
@@ -248,7 +252,7 @@ void GLDisplayWidget::mouseMoveEvent(QMouseEvent *event)
 void GLDisplayWidget::wheelEvent(QWheelEvent *event)
 {
     QPoint numDegrees = event->angleDelta();
-    float stepZoom = 0.1;
+    float stepZoom = 0.15;
     if (!numDegrees.isNull())
     {
         _Z = (numDegrees.x() > 0 || numDegrees.y() > 0) ? _Z + stepZoom : _Z - stepZoom;

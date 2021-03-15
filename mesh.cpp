@@ -63,6 +63,8 @@ void Mesh::parseFile(const char file_name[])
 
     vertices.clear();
     int n_edges = 0;
+    faces.clear();
+    int n_faces = 0;
 
     // first line : n_vertices, n_faces, n_edges
     fscanf(pFile, "%d %d %d\n", &n_vertices, &n_faces, &n_edges);
@@ -169,16 +171,10 @@ void Mesh::add_vertex(Vertex v){
     {
         if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) > 0)
         {
-            insertionTriangle(ix_vertex, ix_face);
+            insertionInFace(ix_vertex, ix_face);
             lawsonAroundVertex(ix_vertex);
             break;
         }
-        else if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) == 0)
-        {
-            insertionInEdge(ix_face, ix_vertex);
-            lawsonAroundVertex(ix_vertex);
-            break;
-        };
     };
 }
 
@@ -209,6 +205,7 @@ float Mesh::vertexInCircumscribingCircle(Face face, Vertex V)
     return res;
 }
 
+// test if an edge is locally Delaunay
 bool Mesh::isDelaunay(int ix_face_1, int ix_opposit_vertex_1)
 {
 
@@ -358,6 +355,8 @@ QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_
     vertices[ix_vertex_3].ix_incident_face = ix_face_2;
     vertices[ix_vertex_2].ix_incident_face = ix_face_2;
 
+    // get the new edges to test in lawson algorithm
+
     QList<std::pair<int, int>> quad_edges;
     quad_edges.push_back({ix_face_1, ix_vertex_1});
     quad_edges.push_back({ix_face_2, ix_vertex_1});
@@ -409,8 +408,9 @@ float Mesh::inTriangleTest(Face face, Vertex vertex)
     };
 }
 
-// insertion point in face
-void Mesh::insertionTriangle(int i_P, int ix_face)
+
+// insertion point i_P in face ix_face
+void Mesh::insertionInFace(int i_P, int ix_face)
 {
     Face old_face = faces[ix_face];
 
@@ -443,11 +443,9 @@ void Mesh::insertionTriangle(int i_P, int ix_face)
     Face &BCP = faces[i_BCP];
     Face &CAP = faces[i_CAP];
 
-    // Actualiser paramÃ¨tres du Mesh
+    // Add faces and update adjacent faces around
 
     n_faces += 2;
-
-    // Ajouter les adjacences des nouveaux triangles
 
     ABP.adjacent_faces[0] = i_BCP;
     ABP.adjacent_faces[1] = i_CAP;
@@ -461,7 +459,6 @@ void Mesh::insertionTriangle(int i_P, int ix_face)
     CAP.adjacent_faces[1] = i_BCP;
     CAP.adjacent_faces[2] = ix_face_B;
 
-    // Adapter les adjacences des triangles autour
 
     for (int i = 0; i < 3; i++)
     {
@@ -479,7 +476,7 @@ void Mesh::insertionTriangle(int i_P, int ix_face)
         };
     }
 
-    // Modifier les ix_incident_face des Vertices
+    // modify incident faces for the vertices
 
     A.ix_incident_face = i_ABP;
     B.ix_incident_face = i_BCP;
@@ -488,205 +485,56 @@ void Mesh::insertionTriangle(int i_P, int ix_face)
 }
 
 
-void Mesh::insertionInEdge(int ix_face_1, int i_P)
-{
-    Face face_1 = faces[ix_face_1];
 
-    int i_A = -1;
-    int i_B = -1;
-    int i_C = -1;
-    int i_D = -1;
-    int ix_face_2 = -1;
-    int ix_face_3 = -1;
-    int ix_face_4 = -1;
-    int ix_face_5 = -1;
-    int ix_face_6 = -1;
-
-    if (orientationTest(vertices[face_1.ix_vertex[0]], vertices[face_1.ix_vertex[1]], vertices[i_P]) == 0)
-    {
-        i_A = face_1.ix_vertex[2];
-        i_B = face_1.ix_vertex[0];
-        i_D = face_1.ix_vertex[1];
-        ix_face_2 = face_1.adjacent_faces[2];
-        ix_face_6 = face_1.adjacent_faces[0];
-        ix_face_3 = face_1.adjacent_faces[1];
-    }
-    else if (orientationTest(vertices[face_1.ix_vertex[1]], vertices[face_1.ix_vertex[2]], vertices[i_P]) == 0)
-    {
-        i_A = face_1.ix_vertex[0];
-        i_B = face_1.ix_vertex[1];
-        i_D = face_1.ix_vertex[2];
-        ix_face_2 = face_1.adjacent_faces[0];
-        ix_face_6 = face_1.adjacent_faces[1];
-        ix_face_3 = face_1.adjacent_faces[2];
-    }
-    else if (orientationTest(vertices[face_1.ix_vertex[2]], vertices[face_1.ix_vertex[0]], vertices[i_P]) == 0)
-    {
-        i_A = face_1.ix_vertex[1];
-        i_B = face_1.ix_vertex[2];
-        i_D = face_1.ix_vertex[0];
-        ix_face_2 = face_1.adjacent_faces[1];
-        ix_face_6 = face_1.adjacent_faces[2];
-        ix_face_3 = face_1.adjacent_faces[0];
-    };
-
-    for (int i = 0; i < 3; i++)
-    {
-        if (faces[ix_face_2].adjacent_faces[i] == ix_face_1)
-        {
-            i_C = faces[ix_face_2].ix_vertex[i];
-            ix_face_4 = faces[ix_face_2].adjacent_faces[(i + 1) % 3];
-            ix_face_5 = faces[ix_face_2].adjacent_faces[(i + 2) % 3];
-        };
-    };
-
-    Vertex &A = vertices[i_A];
-    Vertex &B = vertices[i_B];
-    Vertex &C = vertices[i_C];
-    Vertex &D = vertices[i_D];
-    Vertex &P = vertices[i_P];
-
-    // InsÃ©rer ces triangles dans le tableau faces et supprimer l'ancien
-
-    faces[ix_face_1] = Face(i_D, i_A, i_P); // DAP
-    faces[ix_face_2] = Face(i_C, i_D, i_P); // CDP
-
-    faces.push_back(Face(i_A, i_B, i_P)); // ABP
-    faces.push_back(Face(i_B, i_C, i_P)); // BCP
-
-    int i_DAP = ix_face_1;
-    int i_CDP = ix_face_2;
-    int i_ABP = n_faces;
-    int i_BCP = n_faces + 1;
-
-    Face &DAP = faces[i_DAP];
-    Face &CDP = faces[i_CDP];
-    Face &ABP = faces[i_ABP];
-    Face &BCP = faces[i_BCP];
-
-    // Actualiser paramÃ¨tres du Mesh
-
-    n_faces += 2;
-
-    // Ajouter les adjacences des nouveaux triangles
-
-    DAP.adjacent_faces[0] = i_ABP;
-    DAP.adjacent_faces[1] = i_CDP;
-    DAP.adjacent_faces[2] = ix_face_6;
-
-    CDP.adjacent_faces[0] = i_DAP;
-    CDP.adjacent_faces[1] = i_BCP;
-    CDP.adjacent_faces[2] = ix_face_5;
-
-    ABP.adjacent_faces[0] = i_BCP;
-    ABP.adjacent_faces[1] = i_DAP;
-    ABP.adjacent_faces[2] = ix_face_3;
-
-    BCP.adjacent_faces[0] = i_CDP;
-    BCP.adjacent_faces[1] = i_ABP;
-    BCP.adjacent_faces[2] = ix_face_4;
-
-    // Adapter les adjacences des triangles autour
-
-    for (int i = 0; i < 3; i++)
-    {
-        if (ix_face_3 >= 0 && faces[ix_face_3].adjacent_faces[i] == ix_face_1)
-        {
-            faces[ix_face_3].adjacent_faces[i] = i_ABP;
-        };
-        if (ix_face_4 >= 0 && faces[ix_face_4].adjacent_faces[i] == ix_face_2)
-        {
-            faces[ix_face_4].adjacent_faces[i] = i_BCP;
-        };
-        if (ix_face_5 >= 0 && faces[ix_face_5].adjacent_faces[i] == ix_face_2)
-        {
-            faces[ix_face_5].adjacent_faces[i] = i_CDP;
-        };
-        if (ix_face_6 >= 0 && faces[ix_face_6].adjacent_faces[i] == ix_face_1)
-        {
-            faces[ix_face_6].adjacent_faces[i] = i_DAP;
-        };
-    }
-
-    // Modifier les ix_incident_face des Vertices
-
-    A.ix_incident_face = i_ABP;
-    B.ix_incident_face = i_BCP;
-    C.ix_incident_face = i_CDP;
-    D.ix_incident_face = i_DAP;
-    P.ix_incident_face = i_ABP;
-}
-
-/**
- * Tests whether the edge opposite the vertex is on the contour.
- *
- * @param ix_face index of the face containing the edge.
- * @param ix_vertex index of the vertex opposite the edge.
- * @returns true if the edge is on the contour, false otherwise.
- */
+// test if edge opposite to ix_vertex is an "infinite" edge i.e, if it's an edge between two infinite points.
 bool Mesh::infinitEdge(int ix_face, int ix_vertex)
 {
-    if (faces[ix_face].ix_vertex[0] == ix_vertex)
-    {
-        return faces[ix_face].adjacent_faces[0] < 0;
-    }
-    else if (faces[ix_face].ix_vertex[1] == ix_vertex)
-    {
-        return faces[ix_face].adjacent_faces[1] < 0;
-    }
-    else if (faces[ix_face].ix_vertex[2] == ix_vertex)
-    {
-        return faces[ix_face].adjacent_faces[2] < 0;
-    }
+    if (faces[ix_face].ix_vertex[0] == ix_vertex){return faces[ix_face].adjacent_faces[0] < 0;}
+    else if (faces[ix_face].ix_vertex[1] == ix_vertex){return faces[ix_face].adjacent_faces[1] < 0;}
+    else if (faces[ix_face].ix_vertex[2] == ix_vertex){ return faces[ix_face].adjacent_faces[2] < 0;}
     else
-    {
-        return true;
-    };
+    {return true;};
 }
 
-/**
- * After inserting a vertex into a face, flip around the vertex until the triangle is Delaunay.
- *
- * @param i_P index of the vertex
- */
+// After inserting a vertex into a face, flip around the vertex.
 void Mesh::lawsonAroundVertex(int i_P)
 {
-    // On part d'un vertex i_P (dans ix_face) qui vient d'Ãªtre insere, et on fait des flips recursifs pour qu'a la fin il soit insere et tout soit Delaunay
-    // On recupere les trois ou quatre aretes autour du P dans une file
-    QList<std::pair<int, int>> atraiter;
+
+    QList<std::pair<int, int>> toFlipEdges;
     for (int ix_face = 0; ix_face < n_faces; ix_face++)
     {
         for (int i = 0; i < 3; i++)
         {
             if (faces[ix_face].ix_vertex[i] == i_P)
             {
-                atraiter.push_back({ix_face, i_P});
+                toFlipEdges.push_back({ix_face, i_P});
             }
         }
     }
-    // On lance la boucle while et on remplie et traite la file
-    while (!atraiter.isEmpty())
-    {
-        std::pair<int, int> face_et_vertex = atraiter.takeFirst();
-        int ix_face = face_et_vertex.first;
-        int ix_vertex = face_et_vertex.second;
 
+    while (!toFlipEdges.isEmpty())
+    {
+        std::pair<int, int> edge = toFlipEdges.takeFirst();
+        int ix_face = edge.first;
+        int ix_vertex = edge.second;
+
+        // we don't flip infinite edges
         if (!infinitEdge(ix_face, ix_vertex))
         {
             if (!isDelaunay(ix_face, ix_vertex))
             {
-                QList<std::pair<int, int>> nouvelle_queue = flipEdge(ix_face, ix_vertex); // On fait le flip et rÃ©cupÃ¨re les arete Ã  retester
-                while (!nouvelle_queue.isEmpty())
+                QList<std::pair<int, int>> newEdgesToFlip = flipEdge(ix_face, ix_vertex);
+                while (!newEdgesToFlip.isEmpty())
                 {
 
-                    std::pair<int, int> face_et_vertex_quadrilatere = nouvelle_queue.takeFirst();
-                    int ix_face_quadrilatere = face_et_vertex_quadrilatere.first;
-                    int ix_vertex_quadrilatere = face_et_vertex_quadrilatere.second;
-                    if (!infinitEdge(ix_face_quadrilatere, ix_vertex_quadrilatere))
+                    std::pair<int, int> newEdge = newEdgesToFlip.takeFirst();
+                    int ix_face_newEdge = newEdge.first;
+                    int ix_vertex_newEdge = newEdge.second;
+                    if (!infinitEdge(ix_face_newEdge, ix_vertex_newEdge))
                     {
-                        if (!isDelaunay(ix_face_quadrilatere, ix_vertex_quadrilatere))
+                        if (!isDelaunay(ix_face_newEdge, ix_vertex_newEdge))
                         {
-                            atraiter.push_back(face_et_vertex_quadrilatere);
+                            toFlipEdges.push_back(newEdge);
                         };
                     };
                 };
@@ -701,12 +549,7 @@ void Mesh::lawsonAroundVertex(int i_P)
 // ----------------------------------------------
 
 
-/*
- * Parse a file with vertices and store the data into vertices.
-
- * params:
-  - file_name the path of the file.
-*/
+//Parse a file with vertices and store the data into vertices.
 void Mesh::parseTriFile(const char file_name[])
 {
     FILE *pFile;
@@ -745,43 +588,31 @@ void Mesh::parseTriFile(const char file_name[])
 
 }
 
-/*
- * Draw delaunay triangulation from vertices without triangles.
-
- */
+// Draw delaunay triangulation from vertices without triangles.
 void Mesh::triangulationFromVertices()
 {
-
-    float x_min = vertices[0].x();
-    float x_max = vertices[0].x();
-    float y_min = vertices[0].y();
-    float y_max = vertices[0].y();
+    x_min = vertices[0].x();
+    x_max = vertices[0].x();
+    y_min = vertices[0].y();
+    y_max = vertices[0].y();
 
     for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
     {
         if (vertices[ix_vertex].x() < x_min)
-        {
-            x_min = vertices[ix_vertex].x();
-        };
+        {x_min = vertices[ix_vertex].x();};
         if (vertices[ix_vertex].x() > x_max)
-        {
-            x_max = vertices[ix_vertex].x();
-        };
+        {x_max = vertices[ix_vertex].x();};
         if (vertices[ix_vertex].y() < y_min)
-        {
-            y_min = vertices[ix_vertex].y();
-        };
+        {y_min = vertices[ix_vertex].y();};
         if (vertices[ix_vertex].y() > y_max)
-        {
-            y_max = vertices[ix_vertex].y();
-        };
+        {y_max = vertices[ix_vertex].y();};
     };
 
     // add the square containing all the other vertices
-    float x1 = x_min - 10;
-    float x2 = x_max + 10;
-    float y1 = y_min - 10;
-    float y2 = y_max + 10;
+    float x1 = x_min - (x_max-x_min);
+    float x2 = x_max + (x_max-x_min);
+    float y1 = y_min - (y_max-y_min);
+    float y2 = y_max + (y_max-y_min);
 
     vertices.push_back(Vertex(x1, y1, 0));
     vertices.push_back(Vertex(x1, y2, 0));
@@ -828,25 +659,16 @@ void Mesh::triangulationFromVertices()
         {
             if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) > 0)
             {
-                insertionTriangle(ix_vertex, ix_face);
+                insertionInFace(ix_vertex, ix_face);
                 lawsonAroundVertex(ix_vertex);
                 break;
             }
-            else if (inTriangleTest(faces[ix_face], vertices[ix_vertex]) == 0)
-            {
-                insertionInEdge(ix_face, ix_vertex); // pb ici probablement
-                lawsonAroundVertex(ix_vertex);
-                break;
-            };
         };
     };
 }
 
 
-/*
- * Return the Voronoi point coordinates associated to a Delaunay Triangle
- *
-*/
+//Return the Voronoi point coordinates associated to a Delaunay Triangle
 std::vector<float> Mesh::voronoiCenter(int ix_face)
 {
     std::vector<float> coordinates;
@@ -901,9 +723,9 @@ void Mesh::addVoronoiCentersToTriangulation(){
                 && vertices[faces[ix_face].ix_vertex[2]].is_a_to_draw_point){
 
             std::vector<float> voronoiCoordinates = voronoiCenter(ix_face);
-            std::cout << "nb points: " << n_faces << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
-            std::cout << "nb points: " << n_vertices << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
-            std::cout << "nb points: " << n_vertices << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
+            std::cout << " vorCoord0: " << voronoiCoordinates[0] << std::endl;
+            std::cout << " vorCoord1: " << voronoiCoordinates[1] << std::endl;
+            std::cout << " vorCoord2: " << voronoiCoordinates[2] << std::endl;
 
             vertices.push_back(Vertex(voronoiCoordinates[0],voronoiCoordinates[1],voronoiCoordinates[2]));
             n_vertices+=1;
@@ -922,16 +744,10 @@ void Mesh::addVoronoiCentersToTriangulation(){
 
             if (inTriangleTest(faces[ix_face], vertices[n_vertices-nb_voronoi_vertices+i_voronoix_vertex]) > 0)
             {
-                insertionTriangle(n_vertices-nb_voronoi_vertices+i_voronoix_vertex, ix_face);
+                insertionInFace(n_vertices-nb_voronoi_vertices+i_voronoix_vertex, ix_face);
                 lawsonAroundVertex(n_vertices-nb_voronoi_vertices+i_voronoix_vertex);
                 break;
             }
-            else if (inTriangleTest(faces[ix_face], vertices[n_vertices-nb_voronoi_vertices+i_voronoix_vertex]) == 0)
-            {
-                insertionInEdge(n_vertices-nb_voronoi_vertices+i_voronoix_vertex, ix_face); // pb ici probablement
-                lawsonAroundVertex(n_vertices-nb_voronoi_vertices+i_voronoix_vertex);
-                break;
-            };
         };
     };
 }

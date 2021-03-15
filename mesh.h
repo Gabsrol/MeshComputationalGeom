@@ -76,6 +76,10 @@ public:
     std::vector<Vertex> vertices; // list of vertices
     std::vector<Face> faces; // list of faces
     int n_vertices, n_faces; // number of vertices and faces
+    float x_min = -3;
+    float x_max = 3;
+    float y_min = -3;
+    float y_max = 3;
 
     // file parsing
 
@@ -96,8 +100,7 @@ public:
     QList<std::pair<int, int>> flipEdge(int ix_face1, int ix_vertex_oppose_1_initial);
     float orientationTest(Vertex A, Vertex B, Vertex C);
     float inTriangleTest(Face face, Vertex P);
-    void insertionTriangle(int i_P, int ix_face);
-    void insertionInEdge(int ix_face1, int i_P);
+    void insertionInFace(int i_P, int ix_face);
     bool infinitEdge(int ix_face, int ix_vertex);
     void lawsonAroundVertex(int i_P);
     std::vector<float> voronoiCenter(int ix_face);
