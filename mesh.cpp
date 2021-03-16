@@ -91,7 +91,6 @@ void Mesh::parseFile(const char file_name[])
 }
 
 // To sew the mesh
-
 void Mesh::sew()
 {
     std::cout << "sewing" << std::endl;

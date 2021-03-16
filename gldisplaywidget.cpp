@@ -46,8 +46,8 @@ void GLDisplayWidget::initializeGL()
     // Path to off file : put your path here
 
     //char path_folder[256] = "your/path/to/off_files/"
-    char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
-    //char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
+    //char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
+    char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
 
 
     // building mesh : comment/uncomment the options
