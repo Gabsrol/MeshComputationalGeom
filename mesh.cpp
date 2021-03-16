@@ -235,10 +235,9 @@ bool Mesh::isDelaunay(int ix_face_1, int ix_opposit_vertex_1)
 }
 
 // to flip edge
-QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_vertex_1)
+QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_vertex_1)
 {
     Face &face_1 = faces[ix_face_1];
-    int ix_vertex_1 = ix_initial_opposit_vertex_1;
 
     int ix_face_2 = -1;
     int ix_face_3 = -1;
@@ -250,7 +249,7 @@ QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_
     int ix_vertex_3 = -1;
     int ix_vertex_4 = -1;
 
-    if (ix_initial_opposit_vertex_1 == face_1.ix_vertex[0])
+    if (ix_vertex_1 == face_1.ix_vertex[0])
     {
         ix_face_2 = face_1.adjacent_faces[0];
         ix_face_4 = face_1.adjacent_faces[1];
@@ -260,7 +259,7 @@ QList<std::pair<int, int>> Mesh::flipEdge(int ix_face_1, int ix_initial_opposit_
         ix_vertex_2 = face_1.ix_vertex[2];
 
     }
-    else if (ix_initial_opposit_vertex_1 == face_1.ix_vertex[1])
+    else if (ix_vertex_1 == face_1.ix_vertex[1])
     {
         ix_face_2 = face_1.adjacent_faces[1];
         ix_face_3 = face_1.adjacent_faces[0];
