@@ -59,7 +59,7 @@ void Mesh::parseFile(const char file_name[])
     vertices.clear();
     int n_edges = 0;
     faces.clear();
-    int n_faces = 0;
+    n_faces = 0;
 
     // first line : n_vertices, n_faces, n_edges
     fscanf(pFile, "%d %d %d\n", &n_vertices, &n_faces, &n_edges);
@@ -71,10 +71,7 @@ void Mesh::parseFile(const char file_name[])
 
     float x, y, z;
 
-    fscanf(pFile, "%f %f %f\n", &x, &y, &z);
-    vertices.push_back(Vertex(x, y, z));
-    // Tous les autres points :
-    for (int ix_vertex = 1; ix_vertex < n_vertices; ix_vertex++)
+    for (int ix_vertex = 0; ix_vertex < n_vertices; ix_vertex++)
     {
         fscanf(pFile, "%f %f %f\n", &x, &y, &z);
         vertices.push_back(Vertex(x, y, z));
@@ -87,8 +84,8 @@ void Mesh::parseFile(const char file_name[])
             faces.push_back(Face(ix_vertex_1, ix_vertex_2, ix_vertex_3));
     }
 
-
     fclose(pFile);
+
     std::cout << "end of reading" << std::endl;
 
 }
@@ -109,9 +106,6 @@ void Mesh::sew()
 
     for (int ix_face = 0; ix_face < n_faces; ix_face++) // for each face
     {
-
-        //Face &face = faces[ix_face];
-
         for (int ix_vertex_of_face = 0; ix_vertex_of_face < 3; ix_vertex_of_face++)
         {
             int ix_vertex = faces[ix_face].ix_vertex[ix_vertex_of_face];

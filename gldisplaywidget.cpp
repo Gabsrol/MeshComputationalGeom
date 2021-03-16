@@ -45,29 +45,41 @@ void GLDisplayWidget::initializeGL()
 
     // Path to off file : put your path here
 
-    //char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
-    char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
-    char off_file[32] = "queen.off";
-    char * path_off_file;
-    path_off_file = strcat(path_folder, off_file);
+    //char path_folder[256] = "your/path/to/off_files/"
+    char path_folder[256] = "C:\\Users\\briss\\OneDrive\\Bureau\\mesh_computation\\MeshComputationalGeom\\off_files\\";
+    //char path_folder[256] = "/Users/gabin/Ordinateur/Documents/Centrale_Lyon/3A/Secteur/Calcul_Geometrique/Mesh_Computationnal_Geometry/off_files/";
 
 
     // building mesh : comment/uncomment the options
+
 
     // ---------------------------------------------------------
     // option 1 : 3D structures like queen.off :
     // ---------------------------------------------------------
 
+    char off_file[32] = "queen.off";
+    char * path_off_file = strcat(path_folder, off_file);
     _mesh.parseFile(path_off_file);
     _mesh.sew();
 
 
     // ---------------------------------------------------------
-    // option 2 : triangulation (if your file contains only vertices coordinates)
+    // option 2 : triangulation (your file contains only vertices coordinates)
     // ---------------------------------------------------------
 
-    //_mesh.parseTriFile(path_off_file);
-    //_mesh.triangulationFromVertices();
+//    char off_file[32] = "triangle.off";
+//    char * path_off_file = strcat(path_folder, off_file);
+//    _mesh.parseTriFile(path_off_file);
+//    _mesh.triangulationFromVertices();
+
+    // ---------------------------------------------------------
+    // option 3 : crust algorithm (your file contains only vertices coordinates)
+    // ---------------------------------------------------------
+
+//    char off_file[32] = "lapin.off";
+//    char * path_off_file = strcat(path_folder, off_file);
+//    _mesh.parseTriFile(path_off_file);
+//    _mesh.triangulationFromVertices();
 
 }
 
